@@ -1,0 +1,2812 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<title>CarKeeper — Vehicle Management</title>
+<meta name="description" content="CarKeeper keeps your vehicles, maintenance, repairs and expenses in one beautiful place.">
+<meta name="theme-color" content="#06070A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CarKeeper">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<style>
+*,*::before,*::after{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#06070A; --bg2:#0A0C11;
+  --surface:#101318; --surface2:#151922; --surface3:#1B2028;
+  --line:rgba(255,255,255,.075); --line2:rgba(255,255,255,.13);
+  --txt:#F4F6FA; --txt2:#A7B0BF; --txt3:#6C7686;
+  --blue:#3B82F6; --blue2:#60A5FA; --blueDeep:#1D4ED8;
+  --green:#22C97C; --amber:#FFB020; --red:#FF4D57; --violet:#8B5CF6;
+  --r-lg:24px; --r-md:18px; --r-sm:12px;
+  --tab-h:64px;
+  --safe-b:env(safe-area-inset-bottom,0px);
+  --safe-t:env(safe-area-inset-top,0px);
+  --shadow:0 18px 48px -18px rgba(0,0,0,.85);
+}
+html,body{margin:0;padding:0;height:100%}
+body{
+  background:var(--bg); color:var(--txt);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Inter,Roboto,sans-serif;
+  font-size:15px; line-height:1.45; letter-spacing:-.01em;
+  overscroll-behavior-y:none; overflow-x:hidden; -webkit-font-smoothing:antialiased;
+}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+   radial-gradient(700px 380px at 12% -8%,rgba(59,130,246,.16),transparent 62%),
+   radial-gradient(560px 320px at 92% 6%,rgba(139,92,246,.10),transparent 60%),
+   radial-gradient(900px 500px at 50% 108%,rgba(59,130,246,.06),transparent 60%);
+}
+#app{position:relative;z-index:1;min-height:100vh;max-width:520px;margin:0 auto}
+h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.028em;line-height:1.2}
+p{margin:0}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+input,select,textarea{font:inherit;color:inherit}
+a{color:var(--blue2);text-decoration:none}
+::selection{background:rgba(59,130,246,.35)}
+/* ---------- scrollbars ---------- */
+::-webkit-scrollbar{width:0;height:0}
+
+/* ---------- layout ---------- */
+.screen{padding:calc(var(--safe-t) + 14px) 18px calc(var(--tab-h) + var(--safe-b) + 30px);animation:fade .28s ease both}
+.screen.nopad{padding-left:0;padding-right:0}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes pop{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+.row{display:flex;align-items:center;gap:10px}
+.row.between{justify-content:space-between}
+.col{display:flex;flex-direction:column}
+.gap6{gap:6px}.gap8{gap:8px}.gap10{gap:10px}.gap14{gap:14px}
+.grow{flex:1;min-width:0}
+.mt8{margin-top:8px}.mt12{margin-top:12px}.mt16{margin-top:16px}.mt22{margin-top:22px}.mt28{margin-top:28px}
+.muted{color:var(--txt2)}.dim{color:var(--txt3)}
+.tiny{font-size:11.5px;letter-spacing:.02em}
+.small{font-size:13px}
+.center{text-align:center}
+.ellip{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hide{display:none!important}
+
+/* ---------- header ---------- */
+.apphead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px}
+.apphead h1{font-size:26px}
+.apphead .sub{font-size:12.5px;color:var(--txt3);margin-top:3px;letter-spacing:.01em}
+.iconbtn{width:40px;height:40px;border-radius:14px;display:grid;place-items:center;background:var(--surface2);border:1px solid var(--line);color:var(--txt2);transition:.18s}
+.iconbtn:active{transform:scale(.93);background:var(--surface3)}
+.backbtn{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:var(--surface2);border:1px solid var(--line);flex:0 0 auto}
+
+/* ---------- logo ---------- */
+.brand{display:flex;align-items:center;gap:11px}
+.logo{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;
+  background:linear-gradient(150deg,#3B82F6,#1D4ED8 55%,#1E3A8A);
+  box-shadow:0 8px 24px -8px rgba(59,130,246,.9),inset 0 1px 0 rgba(255,255,255,.28)}
+.logo svg{width:23px;height:23px}
+.brand b{font-size:17px;letter-spacing:-.03em}
+
+/* ---------- cards ---------- */
+.card{background:linear-gradient(168deg,var(--surface2),var(--surface));border:1px solid var(--line);border-radius:var(--r-md);padding:16px}
+.card.flat{background:var(--surface);}
+.card.tap{transition:.18s}
+.card.tap:active{transform:scale(.985);border-color:var(--line2)}
+.hero{position:relative;overflow:hidden;border-radius:var(--r-lg);border:1px solid var(--line2);background:linear-gradient(160deg,#151A23,#0B0E13);padding:18px}
+.hero::after{content:"";position:absolute;right:-40px;top:-60px;width:220px;height:220px;border-radius:50%;
+  background:radial-gradient(circle,rgba(59,130,246,.28),transparent 68%);filter:blur(6px)}
+.sectitle{display:flex;align-items:baseline;justify-content:space-between;margin:26px 0 12px}
+.sectitle h2{font-size:16px;letter-spacing:-.02em}
+.sectitle button{font-size:12.5px;color:var(--blue2);font-weight:600}
+
+/* ---------- buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:50px;padding:0 20px;border-radius:16px;
+  font-weight:640;font-size:15px;letter-spacing:-.01em;transition:.16s;border:1px solid transparent;white-space:nowrap}
+.btn:active{transform:scale(.975)}
+.btn.primary{background:linear-gradient(180deg,#4A8CFF,#2563EB);box-shadow:0 12px 28px -14px rgba(59,130,246,1),inset 0 1px 0 rgba(255,255,255,.28);color:#fff}
+.btn.ghost{background:var(--surface2);border-color:var(--line2);color:var(--txt)}
+.btn.soft{background:rgba(59,130,246,.14);color:var(--blue2);border-color:rgba(59,130,246,.22)}
+.btn.danger{background:rgba(255,77,87,.12);color:#FF7A82;border-color:rgba(255,77,87,.25)}
+.btn.wide{width:100%}
+.btn.sm{height:38px;padding:0 14px;border-radius:12px;font-size:13px}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.fab{position:fixed;right:18px;bottom:calc(var(--tab-h) + var(--safe-b) + 16px);width:54px;height:54px;border-radius:19px;z-index:40;
+  background:linear-gradient(180deg,#4A8CFF,#2563EB);display:grid;place-items:center;color:#fff;
+  box-shadow:0 16px 34px -10px rgba(37,99,235,.85),inset 0 1px 0 rgba(255,255,255,.3);transition:.18s}
+.fab:active{transform:scale(.92)}
+@media(min-width:640px){.fab{right:calc(50% - 260px + 18px)}}
+
+/* ---------- forms ---------- */
+.field{display:block;margin-bottom:13px}
+.field > label{display:block;font-size:12px;font-weight:600;color:var(--txt2);margin-bottom:7px;letter-spacing:.01em}
+.input,select.input,textarea.input{
+  width:100%;height:50px;padding:0 15px;border-radius:14px;background:#0C0F14;
+  border:1px solid var(--line2);color:var(--txt);font-size:15px;transition:.16s;appearance:none}
+textarea.input{height:auto;min-height:88px;padding:13px 15px;line-height:1.5;resize:vertical}
+.input:focus{outline:none;border-color:rgba(59,130,246,.65);box-shadow:0 0 0 3.5px rgba(59,130,246,.14);background:#0A0D12}
+.input::placeholder{color:#4E5764}
+select.input{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' stroke='%236C7686' stroke-width='1.8' fill='none' stroke-linecap='round'/></svg>");
+  background-repeat:no-repeat;background-position:right 15px center;padding-right:38px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.hint{font-size:11.5px;color:var(--txt3);margin-top:6px;line-height:1.4}
+.err{font-size:12.5px;color:#FF7A82;margin-top:8px;min-height:16px}
+.seg{display:flex;background:#0B0E13;border:1px solid var(--line);border-radius:14px;padding:3px;gap:3px}
+.seg button{flex:1;height:38px;border-radius:11px;font-size:13px;font-weight:600;color:var(--txt2);transition:.16s}
+.seg button.on{background:var(--surface3);color:var(--txt);box-shadow:0 1px 0 rgba(255,255,255,.06) inset}
+.switch{position:relative;width:46px;height:28px;border-radius:99px;background:#22272F;border:1px solid var(--line2);transition:.2s;flex:0 0 auto}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#8A93A3;transition:.2s}
+.switch.on{background:rgba(59,130,246,.9);border-color:transparent}
+.switch.on::after{left:22px;background:#fff}
+
+/* ---------- chips / badges ---------- */
+.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 4px;scrollbar-width:none}
+.chip{flex:0 0 auto;height:36px;padding:0 14px;border-radius:12px;background:var(--surface2);border:1px solid var(--line);
+  font-size:13px;font-weight:600;color:var(--txt2);display:inline-flex;align-items:center;gap:7px;transition:.16s}
+.chip.on{background:rgba(59,130,246,.16);border-color:rgba(59,130,246,.4);color:#CFE0FF}
+.badge{display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 9px;border-radius:8px;font-size:11px;font-weight:700;letter-spacing:.02em;text-transform:uppercase}
+.badge.ok{background:rgba(34,201,124,.14);color:#4BE39B}
+.badge.warn{background:rgba(255,176,32,.14);color:#FFC45C}
+.badge.bad{background:rgba(255,77,87,.15);color:#FF8189}
+.badge.info{background:rgba(59,130,246,.15);color:#8AB8FF}
+.badge.neutral{background:rgba(255,255,255,.07);color:var(--txt2)}
+.dot{width:7px;height:7px;border-radius:50%;flex:0 0 auto}
+
+/* ---------- vehicle card ---------- */
+.vcard{position:relative;border-radius:var(--r-lg);overflow:hidden;border:1px solid var(--line2);background:#0A0D12;transition:.2s}
+.vcard:active{transform:scale(.986)}
+.vcard .art{position:relative;height:164px;background:
+  radial-gradient(80% 110% at 50% 0%,rgba(59,130,246,.16),transparent 64%),
+  linear-gradient(180deg,#171D27 0%,#111620 55%,#0A0D12 100%)}
+.vcard .art img{width:100%;height:100%;object-fit:cover}
+.vcard .art .ph{position:absolute;inset:0;display:grid;place-items:center;color:#93A6C0;opacity:.34}
+.vcard .art .fade{position:absolute;inset:0;background:linear-gradient(to top,#0A0D12 0%,rgba(10,13,18,.55) 32%,transparent 72%)}
+.vcard .body{position:relative;padding:0 16px 15px;margin-top:-14px}
+.vcard .nick{font-size:11px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--blue2);margin-bottom:5px}
+.vcard .nm{font-size:18px;font-weight:700;letter-spacing:-.03em}
+.vcard .sub{font-size:12.5px;color:var(--txt3);margin-top:3px}
+.vcard .foot{display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:13px;border-top:1px solid var(--line)}
+.vcard .mi{font-variant-numeric:tabular-nums;font-size:15px;font-weight:700}
+.vcard .mi span{font-size:11px;color:var(--txt3);font-weight:600;margin-left:3px}
+
+/* ---------- list rows ---------- */
+.lrow{display:flex;align-items:center;gap:13px;padding:13px 0;border-bottom:1px solid var(--line)}
+.lrow:last-child{border-bottom:0}
+.lrow .ico{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:var(--surface3);flex:0 0 auto;color:var(--txt2)}
+.lrow .t{font-size:14.5px;font-weight:600;letter-spacing:-.01em}
+.lrow .s{font-size:12px;color:var(--txt3);margin-top:2px}
+.lrow .amt{font-size:14.5px;font-weight:700;font-variant-numeric:tabular-nums;flex:0 0 auto}
+
+/* ---------- stats ---------- */
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:14px}
+.stat .k{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--txt3);font-weight:650}
+.stat .v{font-size:22px;font-weight:750;letter-spacing:-.035em;margin-top:7px;font-variant-numeric:tabular-nums}
+.stat .d{font-size:11.5px;color:var(--txt3);margin-top:3px}
+
+/* ---------- tabbar ---------- */
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:50;height:calc(var(--tab-h) + var(--safe-b));padding-bottom:var(--safe-b);
+  background:rgba(8,10,14,.82);backdrop-filter:blur(22px) saturate(160%);-webkit-backdrop-filter:blur(22px) saturate(160%);
+  border-top:1px solid var(--line);display:flex}
+.tabbar .in{display:flex;width:100%;max-width:520px;margin:0 auto}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--txt3);transition:.16s;position:relative}
+.tab svg{width:23px;height:23px;transition:.18s}
+.tab span{font-size:9.5px;font-weight:650;letter-spacing:.01em}
+.tab.on{color:var(--blue2)}
+.tab.on svg{transform:translateY(-1px)}
+.tab.on::before{content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);width:26px;height:2.5px;border-radius:2px;background:var(--blue)}
+
+/* ---------- sheet / modal ---------- */
+#modal-root{position:fixed;inset:0;z-index:100;pointer-events:none}
+.scrim{position:absolute;inset:0;background:rgba(0,0,0,.62);backdrop-filter:blur(3px);opacity:0;transition:.24s;pointer-events:auto}
+.scrim.on{opacity:1}
+.sheet{position:absolute;left:0;right:0;bottom:0;max-width:520px;margin:0 auto;max-height:92vh;overflow-y:auto;
+  background:linear-gradient(180deg,#12161D,#0B0E13);border-radius:26px 26px 0 0;border:1px solid var(--line2);border-bottom:0;
+  padding:10px 20px calc(22px + var(--safe-b));transform:translateY(102%);transition:transform .3s cubic-bezier(.32,.72,0,1);pointer-events:auto;box-shadow:0 -20px 60px rgba(0,0,0,.7)}
+.sheet.on{transform:none}
+.sheet .grab{width:38px;height:4px;border-radius:99px;background:#2C323C;margin:4px auto 16px}
+.sheet h3{font-size:20px;margin-bottom:6px}
+.sheet .sh-sub{font-size:13px;color:var(--txt3);margin-bottom:18px}
+.sheet-actions{display:flex;gap:10px;margin-top:20px}
+.sheet-actions .btn{flex:1}
+
+/* ---------- toast ---------- */
+#toast-root{position:fixed;left:0;right:0;bottom:calc(var(--tab-h) + var(--safe-b) + 78px);z-index:200;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none}
+.toast{max-width:88%;background:rgba(24,29,37,.98);border:1px solid var(--line2);border-radius:14px;padding:11px 16px;font-size:13.5px;
+  box-shadow:var(--shadow);animation:pop .22s ease both;display:flex;gap:9px;align-items:center}
+.toast.ok{border-color:rgba(34,201,124,.4)}
+.toast.bad{border-color:rgba(255,77,87,.4)}
+
+/* ---------- auth / onboarding ---------- */
+.authwrap{min-height:100vh;display:flex;flex-direction:column;padding:calc(var(--safe-t) + 26px) 22px calc(26px + var(--safe-b))}
+.authhero{flex:1;display:flex;flex-direction:column;justify-content:center;gap:16px;padding:8px 0 24px}
+.authhero h1{font-size:33px;line-height:1.1;letter-spacing:-.04em}
+.authhero p{font-size:15px;color:var(--txt2);line-height:1.55;max-width:330px}
+.pill{display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 12px;border-radius:99px;background:rgba(59,130,246,.12);
+  border:1px solid rgba(59,130,246,.25);color:#9CC4FF;font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;align-self:flex-start}
+.steps{display:flex;gap:5px;margin-bottom:24px}
+.steps i{flex:1;height:3px;border-radius:2px;background:#20252E;transition:.3s}
+.steps i.on{background:var(--blue)}
+.pickcard{display:flex;align-items:center;gap:13px;padding:15px;border-radius:16px;background:var(--surface);border:1.5px solid var(--line);transition:.16s;text-align:left;width:100%}
+.pickcard.on{border-color:rgba(59,130,246,.65);background:rgba(59,130,246,.09)}
+.pickcard .em{font-size:20px;width:34px;text-align:center}
+.pickcard .t{font-size:14px;font-weight:650}
+.pickcard .s{font-size:11.5px;color:var(--txt3);margin-top:2px}
+
+/* ---------- charts ---------- */
+.donut{width:132px;height:132px;flex:0 0 auto;position:relative}
+.donut .ctr{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+.donut .ctr b{font-size:19px;font-weight:750;letter-spacing:-.03em;display:block}
+.donut .ctr i{font-size:10px;color:var(--txt3);font-style:normal;letter-spacing:.05em;text-transform:uppercase}
+.legend{display:flex;flex-direction:column;gap:9px;flex:1;min-width:0}
+.legend .li{display:flex;align-items:center;gap:8px;font-size:12.5px}
+.legend .li b{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:650}
+.bars{display:flex;align-items:flex-end;gap:8px;height:104px;margin-top:6px}
+.bars .b{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px;height:100%}
+.bars .b .bar{width:100%;max-width:26px;border-radius:6px 6px 3px 3px;background:linear-gradient(180deg,#3F86F7,#1D4ED8);min-height:3px;transition:height .5s cubic-bezier(.32,.72,0,1)}
+.bars .b .lb{font-size:9.5px;color:var(--txt3);letter-spacing:.04em}
+.bars .b.cur .bar{background:linear-gradient(180deg,#7FB0FF,#3B82F6);box-shadow:0 0 16px rgba(59,130,246,.5)}
+
+/* ---------- misc ---------- */
+.empty{text-align:center;padding:44px 24px;border:1px dashed var(--line2);border-radius:var(--r-lg);background:rgba(255,255,255,.014)}
+.empty .em{width:56px;height:56px;border-radius:18px;background:var(--surface2);display:grid;place-items:center;margin:0 auto 14px;border:1px solid var(--line)}
+.empty h3{font-size:16px;margin-bottom:6px}
+.empty p{font-size:13px;color:var(--txt3);line-height:1.5;max-width:260px;margin:0 auto}
+.timeline{position:relative;padding-left:26px}
+.timeline::before{content:"";position:absolute;left:8px;top:8px;bottom:8px;width:1.5px;background:linear-gradient(180deg,rgba(59,130,246,.5),rgba(59,130,246,.05))}
+.tl{position:relative;padding-bottom:18px}
+.tl::before{content:"";position:absolute;left:-22px;top:6px;width:9px;height:9px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 3px rgba(59,130,246,.18)}
+.tl.ok::before{background:var(--green);box-shadow:0 0 0 3px rgba(34,201,124,.18)}
+.kv{display:flex;justify-content:space-between;gap:14px;padding:11px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.kv:last-child{border-bottom:0}
+.kv .k{color:var(--txt3)}
+.kv .v{font-weight:600;text-align:right;max-width:60%}
+.plan{border-radius:20px;border:1.5px solid var(--line);padding:18px;background:linear-gradient(170deg,var(--surface2),var(--surface))}
+.plan.best{border-color:rgba(34,201,124,.5);background:linear-gradient(170deg,rgba(34,201,124,.09),var(--surface))}
+.plan.cur{border-color:rgba(59,130,246,.55)}
+.plan .price{font-size:32px;font-weight:800;letter-spacing:-.045em;margin:6px 0 2px;font-variant-numeric:tabular-nums}
+.plan ul{margin:12px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+.plan li{font-size:12.5px;color:var(--txt2);display:flex;gap:8px;line-height:1.35}
+.plan li svg{flex:0 0 auto;margin-top:2px;color:var(--green)}
+.chat{display:flex;flex-direction:column;gap:12px;padding-bottom:8px}
+.msg{max-width:88%;padding:12px 15px;border-radius:18px;font-size:14px;line-height:1.5;white-space:pre-wrap;word-wrap:break-word}
+.msg.me{align-self:flex-end;background:linear-gradient(180deg,#3B82F6,#2563EB);color:#fff;border-bottom-right-radius:6px}
+.msg.ai{align-self:flex-start;background:var(--surface2);border:1px solid var(--line);border-bottom-left-radius:6px}
+.msg.sys{align-self:center;background:transparent;border:1px dashed var(--line2);color:var(--txt3);font-size:12px;max-width:100%;text-align:center}
+.chatbar{position:fixed;left:0;right:0;bottom:calc(var(--tab-h) + var(--safe-b));background:rgba(8,10,14,.92);backdrop-filter:blur(20px);
+  border-top:1px solid var(--line);padding:10px 14px;z-index:45}
+.chatbar .in{max-width:520px;margin:0 auto;display:flex;gap:9px;align-items:flex-end}
+.chatbar textarea{flex:1;min-height:44px;max-height:120px;padding:11px 14px;border-radius:20px;background:#12161D;border:1px solid var(--line2);resize:none;font-size:14.5px;line-height:1.35}
+.chatbar textarea:focus{outline:none;border-color:rgba(59,130,246,.55)}
+.chatbar .send{width:44px;height:44px;border-radius:50%;background:linear-gradient(180deg,#4A8CFF,#2563EB);display:grid;place-items:center;flex:0 0 auto;box-shadow:0 8px 20px -8px rgba(59,130,246,.9)}
+.chatbar .send[disabled]{opacity:.4}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal-root"></div>
+<div id="toast-root"></div>
+<script>
+/* =========================================================
+   CarKeeper — core: storage, auth, state, router, UI atoms
+   ========================================================= */
+'use strict';
+const DB_KEY = 'carkeeper.db.v1';
+const CFG_KEY = 'carkeeper.cfg.v1'; // device config (AI key, cloud creds)
+
+/* ---------------- icons ---------------- */
+const ICONS = {
+  home:'<path d="M3 10.2 12 3l9 7.2V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+  car:'<path d="M5 17h14M6.5 17a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm14 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0ZM3 13l1.6-5.1A2 2 0 0 1 6.5 6.5h11a2 2 0 0 1 1.9 1.4L21 13M3 13h18v3H3z"/>',
+  wrench:'<path d="M15.5 3.5a5 5 0 0 0-6.2 6.2L3 16v5h5l6.3-6.3a5 5 0 0 0 6.2-6.2l-3 3-3-3z"/>',
+  wallet:'<path d="M3 7.5A2.5 2.5 0 0 1 5.5 5H18a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3H5.5A2.5 2.5 0 0 1 3 17.5zM3 8h15M16.5 13.5h.01"/>',
+  sparkles:'<path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8zM18 15l.9 2.2 2.1.8-2.1.9-.9 2.1-.9-2.1-2.1-.9 2.1-.8z"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  camera:'<path d="M3 8.5A2.5 2.5 0 0 1 5.5 6H7l1.2-2h7.6L17 6h1.5A2.5 2.5 0 0 1 21 8.5v9A2.5 2.5 0 0 1 18.5 20h-13A2.5 2.5 0 0 1 3 17.5z"/><circle cx="12" cy="13" r="3.6"/>',
+  chev:'<path d="M9 6l6 6-6 6"/>',
+  back:'<path d="M15 6l-6 6 6 6"/>',
+  trash:'<path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13M10 11v6M14 11v6"/>',
+  edit:'<path d="M4 20h4l10-10a2.5 2.5 0 0 0-3.5-3.5L4.5 16.5zM14.5 6.5l3 3"/>',
+  check:'<path d="M4 12.5l5 5L20 6.5"/>',
+  x:'<path d="M6 6l12 12M18 6L6 18"/>',
+  gauge:'<path d="M12 14l4-4M20.5 17a9 9 0 1 0-17 0"/><circle cx="12" cy="14" r="1.6"/>',
+  bell:'<path d="M6 9a6 6 0 1 1 12 0c0 5 2 6 2 6H4s2-1 2-6M10 21a2.2 2.2 0 0 0 4 0"/>',
+  gear:'<circle cx="12" cy="12" r="3.2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/>',
+  download:'<path d="M12 3v12m0 0l-4.5-4.5M12 15l4.5-4.5M4 19h16"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/>',
+  lock:'<rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/>',
+  fuel:'<path d="M4 20V6a2 2 0 0 1 2-2h5a2 2 0 0 1 2 2v14M3 20h11M13 9h2.5a2.5 2.5 0 0 1 2.5 2.5V16a1.8 1.8 0 0 0 3.5 0V9l-2.5-2.5M5 9h7"/>',
+  tire:'<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3"/><path d="M12 3.5v3M12 17.5v3M3.5 12h3M17.5 12h3"/>',
+  cloud:'<path d="M7 18a4.5 4.5 0 0 1-.4-9A6 6 0 0 1 18 9.5a4.2 4.2 0 0 1-.5 8.5z"/>',
+  alert:'<path d="M12 3.5 22 20H2z"/><path d="M12 9.5v4.5M12 17h.01"/>',
+  doc:'<path d="M6 3h7l5 5v13H6z"/><path d="M13 3v5h5M9 13h6M9 17h6"/>',
+  clock:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+  print:'<path d="M7 8V3h10v5M7 17H4V9h16v8h-3M7 13h10v8H7z"/>',
+  logout:'<path d="M15 17l5-5-5-5M20 12H9M12 3H5v18h7"/>',
+  chart:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+  tag:'<path d="M12 3H5v7l9 9 7-7z"/><circle cx="8.5" cy="6.5" r="1.2"/>',
+  share:'<path d="M12 3v12M8 7l4-4 4 4M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/>',
+  crown:'<path d="M3 8l4 3 5-6 5 6 4-3-2 11H5z"/>',
+  search:'<circle cx="11" cy="11" r="7"/><path d="M16.5 16.5 21 21"/>',
+  refresh:'<path d="M20 12a8 8 0 1 1-2.4-5.7M20 4.5V9h-4.5"/>',
+  shield:'<path d="M12 3l8 3v6c0 5-3.4 8-8 9-4.6-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>'
+};
+function icon(n, s, cls){
+  const p = ICONS[n] || ICONS.alert;
+  return `<svg viewBox="0 0 24 24" width="${s||22}" height="${s||22}" fill="none" stroke="currentColor"
+    stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="${cls||''}" aria-hidden="true">${p}</svg>`;
+}
+
+/* ---------------- utils ---------------- */
+const $ = (s, r) => (r || document).querySelector(s);
+const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 9);
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+const clamp = (n, a, b) => Math.min(b, Math.max(a, n));
+const num = (v, d) => { const n = parseFloat(String(v).replace(/[^0-9.\-]/g, '')); return isFinite(n) ? n : (d === undefined ? 0 : d); };
+const int = (v, d) => Math.round(num(v, d));
+const todayISO = () => new Date().toISOString().slice(0, 10);
+const money = (n) => {
+  const v = Number(n) || 0;
+  return '$' + v.toLocaleString('en-US', { minimumFractionDigits: v % 1 === 0 ? 0 : 2, maximumFractionDigits: 2 });
+};
+const miles = (n) => Math.round(Number(n) || 0).toLocaleString('en-US');
+const fmtDate = (iso) => {
+  if (!iso) return '—';
+  const d = new Date(iso + 'T12:00:00');
+  if (isNaN(d)) return '—';
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+};
+const fmtShort = (iso) => {
+  if (!iso) return '—';
+  const d = new Date(iso + 'T12:00:00');
+  if (isNaN(d)) return '—';
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+};
+const daysFrom = (iso) => {
+  if (!iso) return null;
+  const d = new Date(iso + 'T12:00:00').getTime();
+  return Math.round((d - new Date(new Date().toDateString()).getTime()) / 86400000);
+};
+const addDays = (iso, n) => { const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
+const addMonths = (iso, n) => { const d = new Date(iso + 'T12:00:00'); d.setMonth(d.getMonth() + n); return d.toISOString().slice(0, 10); };
+const monthKey = (iso) => (iso || '').slice(0, 7);
+const thisMonth = () => new Date().toISOString().slice(0, 7);
+const rel = (iso) => {
+  const d = daysFrom(iso);
+  if (d === null) return '—';
+  if (d === 0) return 'today';
+  if (d === 1) return 'tomorrow';
+  if (d === -1) return 'yesterday';
+  if (d < 0) return Math.abs(d) + 'd ago';
+  if (d < 30) return 'in ' + d + 'd';
+  return 'in ' + Math.round(d / 30) + 'mo';
+};
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+/* ---------------- persistence ---------------- */
+const Store = {
+  db: null,
+  load(){
+    try {
+      const raw = localStorage.getItem(DB_KEY);
+      this.db = raw ? JSON.parse(raw) : this.blank();
+    } catch (e) { console.warn('db load failed', e); this.db = this.blank(); }
+    if (!this.db || !this.db.users) this.db = this.blank();
+    return this.db;
+  },
+  blank(){ return { v: 1, users: [], session: null, vehicles: [], services: [], expenses: [], fuel: [], mods: [], reminders: [], odo: [] }; },
+  save(){
+    try {
+      localStorage.setItem(DB_KEY, JSON.stringify(this.db));
+      return true;
+    } catch (e) {
+      toast('Storage is full — remove a photo or receipt to continue.', 'bad');
+      return false;
+    }
+  },
+  reset(){ localStorage.removeItem(DB_KEY); this.db = this.blank(); }
+};
+
+const Cfg = {
+  data: { aiKey: '', aiModel: 'gpt-4o-mini', supabaseUrl: '', supabaseKey: '' },
+  load(){ try { const r = localStorage.getItem(CFG_KEY); if (r) this.data = Object.assign(this.data, JSON.parse(r)); } catch (e) {} return this.data; },
+  save(){ try { localStorage.setItem(CFG_KEY, JSON.stringify(this.data)); } catch (e) {} }
+};
+
+/* images live in IndexedDB (localStorage is too small for photos) */
+const Img = (() => {
+  let dbp = null;
+  function open(){
+    if (dbp) return dbp;
+    dbp = new Promise((res, rej) => {
+      const r = indexedDB.open('carkeeper-img', 1);
+      r.onupgradeneeded = () => { if (!r.result.objectStoreNames.contains('files')) r.result.createObjectStore('files'); };
+      r.onsuccess = () => res(r.result);
+      r.onerror = () => rej(r.error);
+    });
+    return dbp;
+  }
+  return {
+    async put(id, dataUrl){ const db = await open();
+      return new Promise((res, rej) => { const t = db.transaction('files', 'readwrite'); t.objectStore('files').put(dataUrl, id); t.oncomplete = res; t.onerror = () => rej(t.error); }); },
+    async get(id){ const db = await open();
+      return new Promise((res, rej) => { const t = db.transaction('files', 'readonly'); const q = t.objectStore('files').get(id); q.onsuccess = () => res(q.result || null); q.onerror = () => rej(q.error); }); },
+    async del(id){ const db = await open();
+      return new Promise((res) => { const t = db.transaction('files', 'readwrite'); t.objectStore('files').delete(id); t.oncomplete = res; t.onerror = res; }); },
+    /* resize a File to a compact data URL before storing */
+    async compress(file, max, q){
+      max = max || 1400; q = q || 0.72;
+      const bmp = await new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = fr.result; }; fr.onerror = rej; fr.readAsDataURL(file); });
+      const scale = Math.min(1, max / Math.max(bmp.width, bmp.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(bmp.width * scale); c.height = Math.round(bmp.height * scale);
+      c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+      return c.toDataURL('image/jpeg', q);
+    }
+  };
+})();
+/* hydrate <img data-img="id"> placeholders after each render */
+const imgCache = new Map();
+async function hydrateImages(root){
+  const els = $$('[data-img]', root || document);
+  for (const el of els){
+    const id = el.getAttribute('data-img');
+    if (!id) continue;
+    let url = imgCache.get(id);
+    if (!url){ try { url = await Img.get(id); } catch (e) { url = null; } if (url) imgCache.set(id, url); }
+    if (url){ el.src = url; el.style.opacity = 1; }
+  }
+}
+
+/* ---------------- auth (PBKDF2) ---------------- */
+async function hashPass(pass, salt){
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey('raw', enc.encode(pass), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt: enc.encode(salt), iterations: 120000, hash: 'SHA-256' }, key, 256);
+  return Array.from(new Uint8Array(bits)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+const rnd = () => { const a = new Uint8Array(16); crypto.getRandomValues(a); return Array.from(a).map(b => b.toString(16).padStart(2, '0')).join(''); };
+
+const Auth = {
+  user(){ const db = Store.db; return db.session ? db.users.find(u => u.id === db.session) || null : null; },
+  find(email){ return Store.db.users.find(u => u.email.toLowerCase() === String(email || '').trim().toLowerCase()); },
+  async signup(name, email, pass){
+    name = String(name || '').trim();
+    email = String(email || '').trim().toLowerCase();
+    if (name.length < 2) throw new Error('Please enter your name.');
+    if (!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(email)) throw new Error('That email address looks invalid.');
+    if (String(pass).length < 8) throw new Error('Password must be at least 8 characters.');
+    if (this.find(email)) throw new Error('An account with that email already exists.');
+    const salt = rnd();
+    const u = { id: uid(), name, email, salt, hash: await hashPass(pass, salt), plan: 'free', planCycle: null,
+      createdAt: new Date().toISOString(), prefs: { units: 'mi', milesPerMonth: 1000, leadDays: 30, leadMiles: 500, reminders: true, currency: 'USD' } };
+    Store.db.users.push(u);
+    Store.db.session = u.id;
+    Store.save();
+    return u;
+  },
+  async login(email, pass){
+    const u = this.find(email);
+    if (!u) throw new Error('No account found for that email.');
+    const h = await hashPass(String(pass), u.salt);
+    if (h !== u.hash) throw new Error('Incorrect password. Try again.');
+    Store.db.session = u.id; Store.save();
+    return u;
+  },
+  logout(){ Store.db.session = null; Store.save(); },
+  async resetPassword(email, pass){
+    const u = this.find(email);
+    if (!u) throw new Error('No account found for that email.');
+    if (String(pass).length < 8) throw new Error('Password must be at least 8 characters.');
+    u.salt = rnd(); u.hash = await hashPass(pass, u.salt); Store.save();
+    return u;
+  },
+  async changePassword(cur, next){
+    const u = this.user();
+    if (await hashPass(cur, u.salt) !== u.hash) throw new Error('Current password is incorrect.');
+    if (String(next).length < 8) throw new Error('New password must be at least 8 characters.');
+    u.salt = rnd(); u.hash = await hashPass(next, u.salt); Store.save();
+  }
+};
+
+/* ---------------- domain selectors ---------------- */
+const D = {
+  veh(){ const u = Auth.user(); return u ? Store.db.vehicles.filter(v => v.userId === u.id) : []; },
+  vehById(id){ return Store.db.vehicles.find(v => v.id === id && v.userId === (Store.db.session || '')) || null; },
+  cur(){
+    const list = this.veh();
+    if (!list.length) return null;
+    const want = state.vehicleId;
+    return list.find(v => v.id === want) || list[0];
+  },
+  services(vehId){ return Store.db.services.filter(s => s.vehicleId === vehId && this.owns(s)).sort((a, b) => (b.date || '').localeCompare(a.date || '')); },
+  expenses(vehId){ return Store.db.expenses.filter(e => (!vehId || e.vehicleId === vehId) && this.owns(e)).sort((a, b) => (b.date || '').localeCompare(a.date || '')); },
+  fuel(vehId){ return Store.db.fuel.filter(f => (!vehId || f.vehicleId === vehId) && this.owns(f)).sort((a, b) => (b.date || '').localeCompare(a.date || '')); },
+  mods(vehId){ return Store.db.mods.filter(m => (!vehId || m.vehicleId === vehId) && this.owns(m)); },
+  reminders(vehId){ return Store.db.reminders.filter(r => (!vehId || r.vehicleId === vehId) && this.owns(r)); },
+  odo(vehId){ return Store.db.odo.filter(o => o.vehicleId === vehId && this.owns(o)).sort((a, b) => (a.date || '').localeCompare(b.date || '')); },
+  owns(o){ return o && o.userId === (Store.db.session || ''); },
+  spend(vehId, from, to){
+    return this.expenses(vehId).filter(e => (!from || e.date >= from) && (!to || e.date <= to)).reduce((s, e) => s + num(e.amount), 0);
+  },
+  lifetimeSpend(vehId){ return this.spend(vehId); }
+};
+
+/* ---------------- maintenance catalog ---------------- */
+const MT = [
+  { id:'oil',      name:'Oil & Filter',      icon:'fuel',  mi:6000,  mo:6,  cost:80 },
+  { id:'rotate',   name:'Tire Rotation',     icon:'tire',  mi:6000,  mo:6,  cost:35 },
+  { id:'airfilter',name:'Engine Air Filter', icon:'wrench',mi:15000, mo:12, cost:45 },
+  { id:'cabin',    name:'Cabin Air Filter',  icon:'wrench',mi:20000, mo:12, cost:55 },
+  { id:'brakes',   name:'Brake Pads',        icon:'wrench',mi:30000, mo:24, cost:280 },
+  { id:'rotors',   name:'Brake Rotors',      icon:'wrench',mi:60000, mo:48, cost:520 },
+  { id:'brakefluid',name:'Brake Fluid',      icon:'wrench',mi:30000, mo:36, cost:90 },
+  { id:'trans',    name:'Transmission Fluid',icon:'gear',  mi:60000, mo:60, cost:220 },
+  { id:'coolant',  name:'Coolant Flush',     icon:'wrench',mi:60000, mo:60, cost:130 },
+  { id:'spark',    name:'Spark Plugs',       icon:'wrench',mi:60000, mo:60, cost:260 },
+  { id:'battery',  name:'Battery',           icon:'wrench',mi:48000, mo:48, cost:190 },
+  { id:'belts',    name:'Belts & Hoses',     icon:'wrench',mi:60000, mo:60, cost:240 },
+  { id:'tires',    name:'Tires',             icon:'tire',  mi:50000, mo:60, cost:800 },
+  { id:'align',    name:'Alignment',         icon:'tire',  mi:12000, mo:12, cost:110 },
+  { id:'inspect',  name:'State Inspection',  icon:'shield',mi:12000, mo:12, cost:40 },
+  { id:'registration', name:'Registration',  icon:'doc',   mi:null,  mo:12, cost:120 },
+  { id:'insurance',name:'Insurance Renewal', icon:'shield',mi:null,  mo:12, cost:0 },
+  { id:'other',    name:'Other Service',     icon:'wrench',mi:null,  mo:null, cost:0 }
+];
+const mtById = (id) => MT.find(m => m.id === id) || MT[MT.length - 1];
+
+const EXP_CATS = [
+  { id:'gas',          name:'Gas / Fuel',   color:'#3B82F6', icon:'fuel' },
+  { id:'maintenance',  name:'Maintenance',  color:'#22C97C', icon:'wrench' },
+  { id:'repairs',      name:'Repairs',      color:'#FFB020', icon:'wrench' },
+  { id:'insurance',    name:'Insurance',    color:'#8B5CF6', icon:'shield' },
+  { id:'payment',      name:'Car Payment',  color:'#FF4D57', icon:'wallet' },
+  { id:'tires',        name:'Tires',         color:'#EF7D3A', icon:'tire' },
+  { id:'mods',         name:'Modifications', color:'#14B8A6', icon:'gear' },
+  { id:'registration', name:'Registration',  color:'#64748B', icon:'doc' },
+  { id:'other',        name:'Other',        color:'#94A3B8', icon:'tag' }
+];
+const catById = (id) => EXP_CATS.find(c => c.id === id) || EXP_CATS[EXP_CATS.length - 1];
+
+/* --------- maintenance status engine --------- */
+function avgMilesPerMonth(veh){
+  const log = D.odo(veh.id);
+  if (log.length >= 2){
+    const a = log[0], b = log[log.length - 1];
+    const dm = num(b.miles) - num(a.miles);
+    const dd = Math.max(1, (new Date(b.date) - new Date(a.date)) / 86400000);
+    if (dm > 0 && dd > 20) return Math.round(dm / (dd / 30.4));
+  }
+  const p = (Auth.user() && Auth.user().prefs) || {};
+  return num(p.milesPerMonth, 1000) || 1000;
+}
+
+/* Returns due items for a vehicle, sorted by urgency */
+function dueItems(veh){
+  const svc = D.services(veh.id);
+  const prefs = (Auth.user() && Auth.user().prefs) || {};
+  const leadDays = num(prefs.leadDays, 30), leadMiles = num(prefs.leadMiles, 500);
+  const mpm = avgMilesPerMonth(veh);
+  const curMi = num(veh.mileage);
+  const out = [];
+  for (const t of MT){
+    if (!t.mi && !t.mo) continue;
+    const last = svc.find(s => s.type === t.id);
+    if (!last) {
+      out.push({ type: t, last: null, status: 'none', label: 'No record', sort: 9e12 });
+      continue;
+    }
+    const nextDate = t.mo ? addMonths(last.date, t.mo) : null;
+    const nextMi = t.mi ? num(last.mileage) + t.mi : null;
+    const dDate = nextDate ? daysFrom(nextDate) : null;
+    const dMi = nextMi != null ? nextMi - curMi : null;
+    let status = 'ok';
+    if ((dDate !== null && dDate < 0) || (dMi !== null && dMi < 0)) status = 'over';
+    else if ((dDate !== null && dDate <= leadDays) || (dMi !== null && dMi <= leadMiles)) status = 'soon';
+    const monthsLeft = dDate !== null ? dDate / 30.4 : 99;
+    const miMonths = dMi !== null ? dMi / (mpm || 1000) : 99;
+    out.push({ type: t, last, nextDate, nextMi, dDate, dMi, status, sort: Math.min(monthsLeft, miMonths) });
+  }
+  const order = { over: 0, soon: 1, ok: 2, none: 3 };
+  return out.sort((a, b) => (order[a.status] - order[b.status]) || (a.sort - b.sort));
+}
+
+function healthOf(veh){
+  const items = dueItems(veh).filter(i => i.status !== 'none');
+  if (!items.length) return { score: 100, level: 'ok', label: 'No data yet', over: 0, soon: 0, ok: 0, none: dueItems(veh).length };
+  const over = items.filter(i => i.status === 'over').length;
+  const soon = items.filter(i => i.status === 'soon').length;
+  const ok = items.length - over - soon;
+  const score = clamp(Math.round(100 - (over * 22) - (soon * 8)), 5, 100);
+  const level = over ? 'bad' : (soon ? 'warn' : 'ok');
+  const label = over ? 'Needs attention' : (soon ? 'Service coming up' : 'All up to date');
+  return { score, level, label, over, soon, ok, none: dueItems(veh).filter(i => i.status === 'none').length };
+}
+
+function activeReminders(){
+  const u = Auth.user(); if (!u) return [];
+  const out = [];
+  for (const v of D.veh()){
+    for (const it of dueItems(v)){
+      if (it.status === 'over' || it.status === 'soon'){
+        out.push({ veh: v, item: it });
+      }
+    }
+  }
+  return out.sort((a, b) => (a.item.status === b.item.status ? a.item.sort - b.item.sort : a.item.status === 'over' ? -1 : 1));
+}
+
+/* ---------------- entitlements ---------------- */
+const PLANS = {
+  free:    { id:'free',    name:'CarKeeper Free',    price: 0,    year: 0,     vehicles: 1,        paid:false, ai: false, receipts: false, reports: false, analytics: false, mods: false, fuel: false },
+  basic:   { id:'basic',   name:'CarKeeper Basic',   price: 4.99, year: 39.99, vehicles: Infinity, paid:true,  ai: true,  receipts: true,  reports: true,  analytics: true,  mods: true,  fuel: true },
+  premium: { id:'premium', name:'CarKeeper Premium', price: 9.99, year: 79.99, vehicles: Infinity, paid:true,  ai: true,  receipts: true,  reports: true,  analytics: true,  mods: true,  fuel: true, pro: true }
+};
+function plan(){ const u = Auth.user(); return PLANS[(u && u.plan) || 'free'] || PLANS.free; }
+function can(feat){
+  const p = plan();
+  if (feat === 'vehicle') return D.veh().length < p.vehicles;
+  return !!p[feat];
+}
+
+/* =========================================================
+   Stripe billing client — talks only to our own backend.
+   No Stripe secret ever reaches the browser.
+   ========================================================= */
+const PAY = {
+  cfg: { configured:false, mode:'test', publishableKey:null, plans:[] },
+  loaded: false,
+  api(path){ return path.replace(/^\//, ''); },
+  async load(){
+    /* free hosts sleep; retry a couple of times before declaring the server unreachable */
+    for (let attempt = 0; attempt < 3; attempt++){
+      try {
+        const r = await fetch(this.api('/api/config'), { headers: { 'Accept': 'application/json' } });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const j = await r.json();
+        this.cfg = Object.assign({ reachable: true }, j);
+        this.loaded = true;
+        return this.cfg;
+      } catch (e) {
+        if (attempt < 2) await new Promise(res => setTimeout(res, 900));
+        else this.cfg = { configured:false, usable:false, reachable:false, mode:'test', publishableKey:null, plans:[], missing:[] };
+      }
+    }
+    this.loaded = true;
+    return this.cfg;
+  },
+  hasPrice(plan, cycle){ return (this.cfg.plans || []).some(p => p.plan === plan && p.cycle === cycle); },
+  reasonText(){
+    const c = this.cfg || {};
+    if (!c.reachable) return 'Cannot reach the payments server. Check that the Render service is running.';
+    if (c.reasons && c.reasons.noKey) return 'The server has no Stripe secret key (STRIPE_SECRET_KEY).';
+    if (c.missing && c.missing.length) return 'Stripe prices not found: ' + c.missing.join(', ') + '. Open /api/health for details.';
+    return 'Payments are not configured on this server yet.';
+  },
+  async post(path, body){
+    let r;
+    try {
+      r = await fetch(this.api(path), { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(body || {}) });
+    } catch (e) {
+      throw new Error('Cannot reach the payments server. Is it running?');
+    }
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.error || ('Request failed (' + r.status + ')'));
+    return j;
+  },
+  async entitlement(email){
+    try {
+      const r = await fetch(this.api('/api/entitlement?email=' + encodeURIComponent(email)));
+      if (!r.ok) return null;
+      return await r.json();
+    } catch (e) { return null; }
+  },
+  sync(email){ return this.post('/api/sync', { email }); },
+  async checkout(email, plan, cycle){
+    const j = await this.post('/api/checkout', { email, plan, cycle });
+    if (!j.url) throw new Error('Stripe did not return a checkout URL.');
+    location.href = j.url;
+  },
+  async portal(email){
+    const j = await this.post('/api/portal', { email });
+    location.href = j.url;
+  },
+  /* display price from the live Stripe price, falling back to the published list */
+  price(planId, cycle){
+    const fallback = PLANS[planId] ? (cycle === 'year' ? PLANS[planId].year : PLANS[planId].price) : 0;
+    const hit = (this.cfg.plans || []).find(p => p.plan === planId && p.cycle === cycle);
+    return hit && hit.amount != null ? hit.amount / 100 : fallback;
+  }
+};
+
+/* server entitlement is the source of truth for paid plans */
+function applyEntitlement(u, ent){
+  if (!u || !ent || !ent.verified) return false;
+  const sig = (x) => [x.plan, x.planStatus, x.planRenew, !!x.cancelAtPeriodEnd, !!x.paymentFailed].join('|');
+  const before = sig(u);
+  u.plan = ent.plan || 'free';
+  u.planStatus = ent.status || 'none';
+  if (ent.cycle) u.planCycle = ent.cycle;
+  u.planRenew = ent.currentPeriodEnd || null;
+  u.cancelAtPeriodEnd = !!ent.cancelAtPeriodEnd;
+  u.paymentFailed = !!ent.paymentFailed;
+  u.planSource = ent.source || 'server';
+  Store.save();
+  return before !== sig(u);
+}
+async function refreshEntitlement(quiet){
+  const u = Auth.user();
+  if (!u) return false;
+  const ent = await PAY.entitlement(u.email);
+  if (!ent) return false;
+  const changed = applyEntitlement(u, ent);
+  if (changed && !quiet) render();
+  return changed;
+}
+async function pollForActivation(tries){
+  const u = Auth.user();
+  if (!u) return;
+  for (let i = 0; i < (tries || 8); i++){
+    try { const ent = await PAY.sync(u.email); if (ent && ent.verified){ applyEntitlement(u, ent); render();
+      if (ent.plan !== 'free'){ toast('Subscription active — welcome to ' + PLANS[ent.plan].name.replace('CarKeeper ', ''), 'ok'); return; } } }
+    catch (e) { /* server or Stripe not reachable yet — keep polling */ }
+    await new Promise(r => setTimeout(r, 1500));
+  }
+  toast('Payment received. Activation can take a few seconds — pull to refresh.', 'ok');
+}
+
+/* ---------------- UI: toast, sheet, router ---------------- */
+function toast(msg, kind){
+  const root = $('#toast-root');
+  const el = document.createElement('div');
+  el.className = 'toast ' + (kind || '');
+  el.innerHTML = (kind === 'ok' ? icon('check', 16) : kind === 'bad' ? icon('alert', 16) : '') + '<span>' + esc(msg) + '</span>';
+  root.appendChild(el);
+  setTimeout(() => { el.style.transition = 'opacity .3s,transform .3s'; el.style.opacity = 0; el.style.transform = 'translateY(-6px)'; setTimeout(() => el.remove(), 320); }, 2400);
+}
+
+let sheetCloser = null, sheetClearTimer = null;
+function sheet({ title, sub, body, actions, onMount, size }){
+  closeSheet();
+  if (sheetClearTimer){ clearTimeout(sheetClearTimer); sheetClearTimer = null; }
+  const root = $('#modal-root');
+  root.style.pointerEvents = 'auto';
+  root.innerHTML = `<div class="scrim" data-close></div>
+    <div class="sheet" role="dialog" aria-modal="true">
+      <div class="grab"></div>
+      ${title ? `<h3>${esc(title)}</h3>` : ''}
+      ${sub ? `<div class="sh-sub">${esc(sub)}</div>` : ''}
+      <div class="sheet-body">${body || ''}</div>
+      ${actions ? `<div class="sheet-actions">${actions}</div>` : ''}
+    </div>`;
+  const sh = $('.sheet', root);
+  requestAnimationFrame(() => { $('.scrim', root).classList.add('on'); sh.classList.add('on'); });
+  sheetCloser = () => {
+    $('.scrim', root).classList.remove('on'); sh.classList.remove('on');
+    sheetClearTimer = setTimeout(() => { root.innerHTML = ''; root.style.pointerEvents = 'none'; sheetClearTimer = null; }, 280);
+  };
+  root.querySelector('.scrim').addEventListener('click', closeSheet);
+  if (onMount) onMount(sh);
+  return sh;
+}
+function closeSheet(){ if (sheetCloser){ const f = sheetCloser; sheetCloser = null; f(); } }
+
+const state = { view: 'home', vehicleId: null, tab: 'overview', expRange: 'month', aiBusy: false, aiLog: [], authMode: 'welcome', ob: { step: 0, data: {} } };
+
+function go(view, opts){
+  Object.assign(state, opts || {});
+  state.view = view;
+  window.scrollTo({ top: 0, behavior: 'instant' });
+  render();
+}
+function render(){
+  const app = $('#app');
+  const u = Auth.user();
+  let html = '';
+  try {
+    if (!u) html = viewAuth();
+    else if (!u.onboarded) html = viewOnboard();
+    else html = viewApp();
+  } catch (e) {
+    console.error(e);
+    html = `<div class="screen"><div class="empty"><h3>Something went wrong</h3><p>${esc(e.message)}</p></div></div>`;
+  }
+  app.innerHTML = html;
+  hydrateImages(app);
+  bindAuto();
+  requestAnimationFrame(() => $$('.vcard, .card').length && null);
+}
+/* delegated events via data-act */
+const ACTIONS = {};
+function on(name, fn){ ACTIONS[name] = fn; }
+function bindAuto(){
+  const app = $('#app');
+  if (app.dataset.bound) return;
+  app.dataset.bound = '1';
+  app.addEventListener('click', async (ev) => {
+    const t = ev.target.closest('[data-act]');
+    if (!t) return;
+    const name = t.getAttribute('data-act');
+    const fn = ACTIONS[name];
+    if (!fn) return;
+    ev.preventDefault();
+    try { await fn(t, ev); } catch (e) { console.error(e); toast(e.message || 'Something went wrong', 'bad'); }
+  });
+  app.addEventListener('submit', async (ev) => {
+    const f = ev.target.closest('form[data-form]');
+    if (!f) return;
+    ev.preventDefault();
+    const fn = ACTIONS['form:' + f.getAttribute('data-form')];
+    if (!fn) return;
+    try { await fn(f, ev); } catch (e) { console.error(e); const er = $('.err', f); if (er) er.textContent = e.message || 'Something went wrong'; else toast(e.message, 'bad'); }
+  });
+  app.addEventListener('change', async (ev) => {
+    const t = ev.target.closest('[data-change]');
+    if (!t) return;
+    const fn = ACTIONS['change:' + t.getAttribute('data-change')];
+    if (fn) { try { await fn(t, ev); } catch (e) { toast(e.message, 'bad'); } }
+  });
+}
+
+/* small shared fragments */
+function head(title, sub, right){
+  return `<div class="apphead">
+    <div><h1>${esc(title)}</h1>${sub ? `<div class="sub">${esc(sub)}</div>` : ''}</div>
+    <div class="row gap8">${right || ''}</div>
+  </div>`;
+}
+function navBack(to){
+  return `<div class="row gap10" style="margin-bottom:16px">
+    <button class="backbtn" data-act="back" data-to="${to}">${icon('back', 18)}</button>
+  </div>`;
+}
+on('back', (t) => go(t.dataset.to || 'home'));
+
+function emptyBox(em, title, body, cta){
+  return `<div class="empty"><div class="em">${icon(em, 24)}</div><h3>${esc(title)}</h3><p>${esc(body)}</p>${cta || ''}</div>`;
+}
+function statCard(k, v, d, color){
+  return `<div class="stat"><div class="k">${esc(k)}</div><div class="v" ${color ? `style="color:${color}"` : ''}>${v}</div>${d ? `<div class="d">${esc(d)}</div>` : ''}</div>`;
+}
+function ring(score, level){
+  const c = level === 'bad' ? '#FF4D57' : level === 'warn' ? '#FFB020' : '#22C97C';
+  const r = 26, circ = 2 * Math.PI * r, off = circ * (1 - score / 100);
+  return `<svg viewBox="0 0 64 64" width="64" height="64" style="transform:rotate(-90deg)">
+    <circle cx="32" cy="32" r="${r}" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="5"/>
+    <circle cx="32" cy="32" r="${r}" fill="none" stroke="${c}" stroke-width="5" stroke-linecap="round"
+      stroke-dasharray="${circ}" stroke-dashoffset="${off}" style="transition:stroke-dashoffset .8s cubic-bezier(.32,.72,0,1)"/>
+  </svg>`;
+}
+function donut(parts, total, centerLabel){
+  const R = 56, C = 2 * Math.PI * R;
+  let acc = 0;
+  const segs = parts.filter(p => p.value > 0).map(p => {
+    const len = (p.value / total) * C;
+    const s = `<circle cx="70" cy="70" r="${R}" fill="none" stroke="${p.color}" stroke-width="16"
+      stroke-dasharray="${len - 2.5} ${C - len + 2.5}" stroke-dashoffset="${-acc}" transform="rotate(-90 70 70)"/>`;
+    acc += len; return s;
+  }).join('');
+  return `<div class="donut"><svg viewBox="0 0 140 140" width="132" height="132">
+      <circle cx="70" cy="70" r="${R}" fill="none" stroke="rgba(255,255,255,.055)" stroke-width="16"/>${segs}</svg>
+    <div class="ctr"><div><b>${centerLabel}</b><i>total</i></div></div></div>`;
+}
+/* =========================================================
+   Auth screens
+   ========================================================= */
+function brandBlock(big){
+  return `<div class="brand" style="gap:12px">
+    <div class="logo" style="width:${big?52:42}px;height:${big?52:42}px;border-radius:${big?17:13}px">${icon('car', big?28:23)}</div>
+    <div><b style="font-size:${big?21:17}px;letter-spacing:-.035em">CarKeeper</b>
+      <div class="tiny dim" style="margin-top:1px">Vehicle management, done right</div></div>
+  </div>`;
+}
+
+function viewAuth(){
+  const m = state.authMode;
+  if (m === 'welcome') return authWelcome();
+  if (m === 'signup') return authSignup();
+  if (m === 'login') return authLogin();
+  if (m === 'forgot') return authForgot();
+  return authWelcome();
+}
+
+function authWelcome(){
+  return `<div class="authwrap">
+    ${brandBlock(true)}
+    <div class="authhero">
+      <div class="pill">${icon('shield', 13)} Built for every vehicle</div>
+      <h1>Every service,<br>every dollar,<br><span style="color:#7FB0FF">one place.</span></h1>
+      <p>CarKeeper tracks your maintenance, repairs and real cost of ownership — and tells you what your car needs next, before it breaks.</p>
+      <div class="col gap10" style="margin-top:6px">
+        ${['Never miss an oil change or inspection again','Know your true monthly cost of ownership','Keep a resale-ready service history'].map(t =>
+          `<div class="row gap10"><div style="color:#4BE39B;display:grid;place-items:center">${icon('check', 16)}</div><div class="small muted">${esc(t)}</div></div>`).join('')}
+      </div>
+    </div>
+    <div class="col gap10">
+      <button class="btn primary wide" data-act="auth" data-mode="signup">Create your account</button>
+      <button class="btn ghost wide" data-act="auth" data-mode="login">I already have an account</button>
+      <div class="tiny dim center" style="margin-top:6px;line-height:1.5">Your data is stored locally on this device and never uploaded.<br>No accounts are shared with anyone.</div>
+    </div>
+  </div>`;
+}
+
+function authSignup(){
+  return `<div class="authwrap">
+    <div class="row between" style="margin-bottom:26px">
+      <button class="backbtn" data-act="auth" data-mode="welcome">${icon('back', 18)}</button>
+      ${brandBlock(false)}
+    </div>
+    <div style="flex:1">
+      <h1 style="font-size:27px;margin-bottom:7px">Create your account</h1>
+      <p class="small muted" style="margin-bottom:24px">Free forever for one vehicle. Upgrade any time.</p>
+      <form data-form="signup" novalidate>
+        <div class="field"><label>Full name</label><input class="input" name="name" autocomplete="name" placeholder="Alex Morgan" required></div>
+        <div class="field"><label>Email</label><input class="input" name="email" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" required></div>
+        <div class="field"><label>Password</label>
+          <input class="input" name="pass" type="password" autocomplete="new-password" placeholder="At least 8 characters" required>
+          <div class="hint">Stored as a salted PBKDF2 hash (120k iterations) — never in plain text.</div></div>
+        <div class="field"><label>Confirm password</label><input class="input" name="pass2" type="password" autocomplete="new-password" placeholder="Repeat password" required></div>
+        <div class="err"></div>
+        <button class="btn primary wide" type="submit">Create account</button>
+      </form>
+      <div class="center small muted mt16">Already have an account? <a href="#" data-act="auth" data-mode="login">Log in</a></div>
+    </div>
+  </div>`;
+}
+
+function authLogin(){
+  return `<div class="authwrap">
+    <div class="row between" style="margin-bottom:26px">
+      <button class="backbtn" data-act="auth" data-mode="welcome">${icon('back', 18)}</button>
+      ${brandBlock(false)}
+    </div>
+    <div style="flex:1">
+      <h1 style="font-size:27px;margin-bottom:7px">Welcome back</h1>
+      <p class="small muted" style="margin-bottom:24px">Log in to your garage.</p>
+      <form data-form="login" novalidate>
+        <div class="field"><label>Email</label><input class="input" name="email" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" required></div>
+        <div class="field"><label>Password</label><input class="input" name="pass" type="password" autocomplete="current-password" placeholder="Your password" required></div>
+        <div class="err"></div>
+        <button class="btn primary wide" type="submit">Log in</button>
+      </form>
+      <div class="center small mt16"><a href="#" data-act="auth" data-mode="forgot">Forgot your password?</a></div>
+    </div>
+  </div>`;
+}
+
+function authForgot(){
+  return `<div class="authwrap">
+    <div class="row between" style="margin-bottom:26px">
+      <button class="backbtn" data-act="auth" data-mode="login">${icon('back', 18)}</button>
+      ${brandBlock(false)}
+    </div>
+    <div style="flex:1">
+      <h1 style="font-size:27px;margin-bottom:7px">Reset password</h1>
+      <p class="small muted" style="margin-bottom:20px">CarKeeper runs local-first: your account lives on this device, so a reset happens right here. Enter your email and choose a new password.</p>
+      <form data-form="forgot" novalidate>
+        <div class="field"><label>Account email</label><input class="input" name="email" type="email" inputmode="email" placeholder="you@example.com" required></div>
+        <div class="field"><label>New password</label><input class="input" name="pass" type="password" autocomplete="new-password" placeholder="At least 8 characters" required></div>
+        <div class="field"><label>Confirm new password</label><input class="input" name="pass2" type="password" autocomplete="new-password" placeholder="Repeat password" required></div>
+        <div class="err"></div>
+        <button class="btn primary wide" type="submit">Reset password</button>
+      </form>
+      <div class="card mt22" style="border-color:rgba(255,176,32,.28);background:rgba(255,176,32,.06)">
+        <div class="row gap8" style="color:#FFC45C;font-size:12.5px;font-weight:700">${icon('alert', 15)} Email delivery not configured</div>
+        <div class="tiny muted mt8" style="line-height:1.55">Emailed reset links require a backend (see Settings → Cloud sync and the README). Until then, resets are verified against the account stored on this device.</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+on('auth', (t) => { state.authMode = t.dataset.mode; render(); });
+
+ACTIONS['form:signup'] = async (f) => {
+  const d = Object.fromEntries(new FormData(f));
+  if (d.pass !== d.pass2) throw new Error('Passwords do not match.');
+  const btn = $('button[type=submit]', f); btn.disabled = true; btn.textContent = 'Creating…';
+  try { await Auth.signup(d.name, d.email, d.pass); }
+  catch (e) { btn.disabled = false; btn.textContent = 'Create account'; throw e; }
+  toast('Account created', 'ok');
+  state.ob = { step: 0, data: {} };
+  render();
+};
+ACTIONS['form:login'] = async (f) => {
+  const d = Object.fromEntries(new FormData(f));
+  const btn = $('button[type=submit]', f); btn.disabled = true; btn.textContent = 'Logging in…';
+  try { await Auth.login(d.email, d.pass); }
+  catch (e) { btn.disabled = false; btn.textContent = 'Log in'; throw e; }
+  toast('Welcome back', 'ok');
+  go('home');
+};
+ACTIONS['form:forgot'] = async (f) => {
+  const d = Object.fromEntries(new FormData(f));
+  if (d.pass !== d.pass2) throw new Error('Passwords do not match.');
+  const btn = $('button[type=submit]', f); btn.disabled = true; btn.textContent = 'Updating…';
+  let u;
+  try { u = await Auth.resetPassword(d.email, d.pass); }
+  catch (e) { btn.disabled = false; btn.textContent = 'Reset password'; throw e; }
+  Store.db.session = u.id; Store.save();
+  toast('Password updated — you are logged in', 'ok');
+  go('home');
+};
+
+/* =========================================================
+   Onboarding
+   ========================================================= */
+function viewOnboard(){
+  const st = state.ob;
+  const steps = ['Vehicle', 'Mileage', 'Preferences', 'Ready'];
+  const dots = `<div class="steps">${steps.map((_, i) => `<i class="${i <= st.step ? 'on' : ''}"></i>`).join('')}</div>`;
+  const d = st.data;
+  let body = '';
+
+  if (st.step === 0){
+    body = `<h1 style="font-size:26px">Add your vehicle</h1>
+      <p class="small muted" style="margin:7px 0 22px">Start with the car you drive most. You can add more later.</p>
+      <form data-form="ob0" novalidate>
+        <div class="grid2">
+          <div class="field"><label>Year</label><input class="input" name="year" inputmode="numeric" placeholder="2019" value="${esc(d.year || '')}" required></div>
+          <div class="field"><label>Make</label><input class="input" name="make" placeholder="Honda" value="${esc(d.make || '')}" required></div>
+        </div>
+        <div class="grid2">
+          <div class="field"><label>Model</label><input class="input" name="model" placeholder="Civic" value="${esc(d.model || '')}" required></div>
+          <div class="field"><label>Trim</label><input class="input" name="trim" placeholder="EX-L" value="${esc(d.trim || '')}"></div>
+        </div>
+        <div class="field"><label>Nickname <span class="dim">(optional)</span></label><input class="input" name="nickname" placeholder="Daily driver" value="${esc(d.nickname || '')}"></div>
+        <div class="err"></div>
+        <button class="btn primary wide mt8" type="submit">Continue ${icon('chev', 17)}</button>
+      </form>`;
+  } else if (st.step === 1){
+    body = `<h1 style="font-size:26px">Current mileage</h1>
+      <p class="small muted" style="margin:7px 0 22px">This is the anchor for every maintenance prediction. Update it any time from your dashboard.</p>
+      <form data-form="ob1" novalidate>
+        <div class="field"><label>Odometer</label><input class="input" name="mileage" inputmode="numeric" placeholder="48,250" value="${esc(d.mileage || '')}" required></div>
+        <div class="field"><label>VIN <span class="dim">(optional)</span></label><input class="input" name="vin" placeholder="17 characters" maxlength="17" value="${esc(d.vin || '')}"></div>
+        <div class="field"><label>License plate <span class="dim">(optional)</span></label><input class="input" name="plate" placeholder="7ABC123" value="${esc(d.plate || '')}"></div>
+        <div class="err"></div>
+        <div class="row gap10 mt8">
+          <button class="btn ghost" type="button" data-act="ob-back">Back</button>
+          <button class="btn primary grow" type="submit">Continue</button>
+        </div>
+      </form>`;
+  } else if (st.step === 2){
+    const p = (Auth.user() && Auth.user().prefs) || {};
+    body = `<h1 style="font-size:26px">How you drive</h1>
+      <p class="small muted" style="margin:7px 0 22px">We use this to turn mileage and dates into accurate service predictions.</p>
+      <form data-form="ob2" novalidate>
+        <div class="field"><label>Miles driven per month</label>
+          <select class="input" name="milesPerMonth">
+            ${[[500,'Under 500 (weekend car)'],[1000,'About 1,000 (average)'],[1500,'About 1,500'],[2500,'2,500+ (heavy commuter)']].map(([v, l]) =>
+              `<option value="${v}" ${num(p.milesPerMonth, 1000) === v ? 'selected' : ''}>${l}</option>`).join('')}
+          </select></div>
+        <div class="field"><label>Warn me this far ahead of a due date</label>
+          <select class="input" name="leadDays">
+            ${[[14,'2 weeks'],[30,'30 days'],[60,'60 days']].map(([v, l]) => `<option value="${v}" ${num(p.leadDays,30) === v ? 'selected' : ''}>${l}</option>`).join('')}
+          </select></div>
+        <div class="card" style="background:rgba(59,130,246,.07);border-color:rgba(59,130,246,.22)">
+          <div class="row between"><div><div class="small" style="font-weight:650">Service reminders</div><div class="tiny dim mt8" style="margin-top:3px">Dashboard alerts and in-app nudges</div></div>
+            <div class="switch on" data-act="ob-toggle" data-key="reminders"></div></div>
+        </div>
+        <div class="err"></div>
+        <div class="row gap10 mt16">
+          <button class="btn ghost" type="button" data-act="ob-back">Back</button>
+          <button class="btn primary grow" type="submit">Finish setup</button>
+        </div>
+      </form>`;
+    state.ob.reminders = p.reminders !== false;
+  } else {
+    const v = D.veh()[0];
+    body = `<div class="center" style="padding:20px 0 4px">
+      <div style="width:74px;height:74px;border-radius:24px;margin:0 auto 18px;display:grid;place-items:center;background:rgba(34,201,124,.13);color:#4BE39B;border:1px solid rgba(34,201,124,.3)">${icon('check', 36)}</div>
+      <h1 style="font-size:25px">Your garage is ready</h1>
+      <p class="small muted" style="margin-top:9px;line-height:1.6">${v ? esc(vehicleName(v)) : 'Your vehicle'} is set up. We pre-loaded the standard factory maintenance schedule so your dashboard has something to track from day one.</p>
+    </div>
+    <div class="card mt22">
+      ${dueItems(v || {id:'', mileage:0}).slice(0, 5).map(it => `<div class="lrow">
+        <div class="ico">${icon(it.type.icon, 19)}</div>
+        <div class="grow"><div class="t">${esc(it.type.name)}</div><div class="s">Factory interval · every ${it.type.mi ? miles(it.type.mi) + ' mi' : ''}${it.type.mi && it.type.mo ? ' or ' : ''}${it.type.mo ? it.type.mo + ' months' : ''}</div></div>
+      </div>`).join('')}
+    </div>
+    <button class="btn primary wide mt22" data-act="ob-done">Go to my dashboard ${icon('chev', 17)}</button>`;
+  }
+
+  const titles = ['Step 1 of 3', 'Step 2 of 3', 'Step 3 of 3', 'All set'];
+  return `<div class="authwrap">
+    <div class="row between" style="margin-bottom:20px">
+      <div class="small dim">${titles[st.step]}</div>
+      ${st.step < 3 ? `<button class="small dim" data-act="ob-skip">Skip</button>` : ''}
+    </div>
+    ${dots}
+    ${body}
+  </div>`;
+}
+
+function vehicleName(v){
+  if (!v) return 'Vehicle';
+  if (v.nickname) return v.nickname;
+  return [v.year, v.make, v.model].filter(Boolean).join(' ') || 'My vehicle';
+}
+function vehicleDesc(v){
+  return [v.year, v.make, v.model, v.trim].filter(Boolean).join(' ') || 'Vehicle';
+}
+
+on('ob-skip', () => { state.ob.step = Math.min(3, state.ob.step + 1); render(); });
+on('ob-back', () => { state.ob.step = Math.max(0, state.ob.step - 1); render(); });
+on('ob-toggle', (t) => { state.ob.reminders = !state.ob.reminders; t.classList.toggle('on'); });
+on('ob-done', () => {
+  const u = Auth.user(); u.onboarded = true; Store.save();
+  go('home');
+});
+
+ACTIONS['form:ob0'] = (f) => {
+  const d = Object.fromEntries(new FormData(f));
+  if (!d.year || !d.make || !d.model) throw new Error('Year, make and model are required.');
+  const y = int(d.year);
+  if (y < 1900 || y > new Date().getFullYear() + 1) throw new Error('Enter a valid model year.');
+  state.ob.data = Object.assign({}, state.ob.data, d);
+  state.ob.step = 1; render();
+};
+ACTIONS['form:ob1'] = (f) => {
+  const d = Object.fromEntries(new FormData(f));
+  if (!String(d.mileage).trim()) throw new Error('Enter your current mileage.');
+  Object.assign(state.ob.data, d, { mileage: int(d.mileage) });
+  state.ob.step = 2; render();
+};
+ACTIONS['form:ob2'] = (f) => {
+  const d = Object.fromEntries(new FormData(f));
+  const u = Auth.user();
+  u.prefs = Object.assign({}, u.prefs, { milesPerMonth: int(d.milesPerMonth, 1000), leadDays: int(d.leadDays, 30), reminders: state.ob.reminders !== false });
+  // create the vehicle
+  const v = createVehicle(Object.assign({}, state.ob.data, { userId: u.id }));
+  Store.db.odo.push({ id: uid(), userId: u.id, vehicleId: v.id, miles: num(v.mileage), date: todayISO() });
+  Store.save();
+  state.vehicleId = v.id;
+  state.ob.step = 3; render();
+};
+
+function createVehicle(data){
+  const u = Auth.user();
+  const v = {
+    id: uid(), userId: u.id,
+    year: int(data.year), make: String(data.make || '').trim(), model: String(data.model || '').trim(),
+    trim: String(data.trim || '').trim(), engine: String(data.engine || '').trim(),
+    mileage: int(data.mileage), vin: String(data.vin || '').trim().toUpperCase(), plate: String(data.plate || '').trim().toUpperCase(),
+    nickname: String(data.nickname || '').trim(), photo: data.photo || null,
+    tireSize: String(data.tireSize || '').trim(), warranty: String(data.warranty || '').trim(),
+    resale: num(data.resale, 0), createdAt: new Date().toISOString()
+  };
+  Store.db.vehicles.push(v);
+  Store.save();
+  return v;
+}
+/* =========================================================
+   App shell + Home
+   ========================================================= */
+const TABS = [
+  { id:'home',    label:'Home',      icon:'home' },
+  { id:'garage',  label:'Garage',    icon:'car' },
+  { id:'maint',   label:'Maintenance', icon:'wrench' },
+  { id:'exp',     label:'Expenses',  icon:'wallet' },
+  { id:'ai',      label:'Assistant', icon:'sparkles' }
+];
+function tabbar(active){
+  return `<nav class="tabbar"><div class="in">
+    ${TABS.map(t => `<button class="tab ${active === t.id ? 'on' : ''}" data-act="tab" data-tab="${t.id}" aria-label="${t.label}">
+      ${icon(t.icon, 23)}<span>${t.label}</span></button>`).join('')}
+  </div></nav>`;
+}
+on('tab', (t) => go(t.dataset.tab === 'maint' ? 'maint' : t.dataset.tab));
+
+function viewApp(){
+  const v = state.view;
+  let inner = '', active = 'home', fab = '';
+  if (v === 'home'){ inner = viewHome(); active = 'home'; }
+  else if (v === 'garage'){ inner = viewGarage(); active = 'garage'; }
+  else if (v === 'vehicle'){ inner = viewVehicle(); active = 'garage'; }
+  else if (v === 'maint'){ inner = viewMaint(); active = 'maint'; }
+  else if (v === 'exp'){ inner = viewExpenses(); active = 'exp'; }
+  else if (v === 'ai'){ inner = viewAI(); active = 'ai'; }
+  else if (v === 'settings'){ inner = viewSettings(); active = ''; }
+  else if (v === 'plan'){ inner = viewPlan(); active = ''; }
+  else if (v === 'report'){ inner = viewReport(); active = ''; }
+  else inner = viewHome();
+  return inner + (v === 'ai' ? '' : '') + (active ? tabbar(active) : '');
+}
+
+/* ---------------- HOME ---------------- */
+function viewHome(){
+  const u = Auth.user();
+  const list = D.veh();
+  if (!list.length){
+    return `<div class="screen">${head('Home', 'Welcome to CarKeeper')}
+      ${emptyBox('car', 'Your garage is empty', 'Add a vehicle to unlock maintenance tracking, reminders and cost reports.', `<button class="btn primary mt16" data-act="veh-new">Add a vehicle</button>`)}
+    </div>`;
+  }
+  const v = D.cur();
+  const h = healthOf(v);
+  const monthSpend = D.spend(v.id, thisMonth() + '-01', thisMonth() + '-31');
+  const life = D.spend(v.id);
+  const due = dueItems(v);
+  const next = due.filter(d => d.status !== 'none').slice(0, 3);
+  const recent = D.services(v.id).slice(0, 4);
+  const hour = new Date().getHours();
+  const greet = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+  const lvlBadge = h.level === 'bad' ? 'bad' : h.level === 'warn' ? 'warn' : 'ok';
+
+  return `<div class="screen">
+    ${head(greet + ', ' + u.name.split(' ')[0], new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' }),
+      `<button class="iconbtn" data-act="settings" aria-label="Settings">${icon('gear', 20)}</button>`)}
+
+    ${list.length > 1 ? `<div class="chips" style="margin-bottom:14px">
+      ${list.map(x => `<button class="chip ${x.id === v.id ? 'on' : ''}" data-act="pick-veh" data-id="${x.id}">
+        ${icon('car', 15)}${esc(vehicleName(x))}</button>`).join('')}
+      <button class="chip" data-act="veh-new">${icon('plus', 15)}Add</button>
+    </div>` : ''}
+
+    ${u.paymentFailed ? `<div class="card" style="margin-bottom:14px;border-color:rgba(255,77,87,.35);background:rgba(255,77,87,.07)">
+      <div class="row gap10"><div style="color:#FF8189">${icon('alert', 18)}</div>
+        <div class="grow"><div class="small" style="font-weight:700">Payment failed</div>
+        <div class="tiny muted" style="margin-top:2px">Update your card to keep your subscription active.</div></div>
+        <button class="btn sm danger" data-act="manage-billing">Fix</button></div>
+    </div>` : ''}
+    ${(u.planSource === 'server' && PLANS[u.plan] && PLANS[u.plan].paid && u.cancelAtPeriodEnd) ? `<div class="card" style="margin-bottom:14px;border-color:rgba(255,176,32,.3);background:rgba(255,176,32,.05)">
+      <div class="row gap10"><div style="color:#FFC45C">${icon('clock', 17)}</div>
+        <div class="grow tiny muted">Subscription ends ${u.planRenew ? fmtDate(u.planRenew.slice(0,10)) : 'soon'} — you keep access until then.</div></div>
+    </div>` : ''}
+    <div class="vcard" data-act="open-veh" data-id="${v.id}">
+      <div class="art">
+        ${v.photo ? `<img data-img="${esc(v.photo)}" style="opacity:0;transition:opacity .3s" alt="">` : `<div class="ph">${icon('car', 62)}</div>`}
+        <div class="fade"></div>
+        <div style="position:absolute;top:12px;left:14px"><span class="badge ${lvlBadge}">${h.level === 'bad' ? 'Action needed' : h.level === 'warn' ? 'Coming up' : 'Healthy'}</span></div>
+        <div style="position:absolute;top:12px;right:14px;width:38px;height:38px;border-radius:50%;background:rgba(8,10,14,.62);backdrop-filter:blur(8px);display:grid;place-items:center" data-act="odo" data-id="${v.id}">
+          ${icon('gauge', 18)}
+        </div>
+      </div>
+      <div class="body">
+        <div class="nick">${esc(v.nickname || 'My vehicle')}</div>
+        <div class="nm">${esc(vehicleDesc(v))}</div>
+        <div class="sub">${v.engine ? esc(v.engine) + ' · ' : ''}${v.plate ? esc(v.plate) : 'No plate on file'}</div>
+        <div class="foot">
+          <div>
+            <div class="mi">${miles(v.mileage)}<span>mi</span></div>
+            <div class="tiny dim" style="margin-top:2px">Odometer</div>
+          </div>
+          <div class="row gap10">
+            <div style="text-align:right">
+              <div style="font-size:14px;font-weight:700;color:${h.level==='bad'?'#FF8189':h.level==='warn'?'#FFC45C':'#4BE39B'}">${h.score}</div>
+              <div class="tiny dim">Health</div>
+            </div>
+            <div style="width:42px;height:42px;position:relative;display:grid;place-items:center">
+              <div style="position:absolute;inset:0;display:grid;place-items:center">${ring(h.score, h.level).replace('width="64" height="64"','width="42" height="42"')}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats mt12">
+      ${statCard('This month', money(monthSpend), new Date().toLocaleDateString('en-US',{month:'long'}))}
+      ${statCard('Overdue', String(h.over), h.over ? 'Items past due' : 'Nothing overdue', h.over ? '#FF8189' : null)}
+      ${statCard('Lifetime cost', money(life), 'All recorded spend')}
+      ${statCard('Service records', String(D.services(v.id).length), 'Entries logged')}
+    </div>
+
+    <div class="sectitle"><h2>Next up</h2><button data-act="open-maint">View all</button></div>
+    ${next.length ? `<div class="card" style="padding:4px 16px">
+      ${next.map(it => `<div class="lrow" data-act="log-service" data-type="${it.type.id}">
+        <div class="ico" style="color:${it.status==='over'?'#FF8189':it.status==='soon'?'#FFC45C':'#4BE39B'}">${icon(it.type.icon, 19)}</div>
+        <div class="grow">
+          <div class="t">${esc(it.type.name)}</div>
+          <div class="s">${it.status === 'over' ? 'Overdue' : 'Due'} ${it.nextDate ? '· ' + fmtDate(it.nextDate) : ''}${it.dMi != null ? ' · ' + miles(it.nextMi) + ' mi' : ''}</div>
+        </div>
+        <span class="badge ${it.status === 'over' ? 'bad' : it.status === 'soon' ? 'warn' : 'ok'}">${it.status === 'over' ? 'Late' : it.status === 'soon' ? 'Soon' : 'OK'}</span>
+      </div>`).join('')}
+    </div>` : `<div class="card center" style="padding:22px"><div style="color:#4BE39B;margin-bottom:8px">${icon('check', 26)}</div>
+      <div class="small" style="font-weight:650">Nothing due</div><div class="tiny dim mt8" style="margin-top:4px">All tracked items are up to date.</div></div>`}
+
+    ${h.none ? `<div class="card mt12" style="border-color:rgba(59,130,246,.24);background:rgba(59,130,246,.06)">
+      <div class="row gap10"><div style="color:#8AB8FF">${icon('alert', 18)}</div>
+        <div class="grow"><div class="small" style="font-weight:650">${h.none} item${h.none>1?'s':''} with no history yet</div>
+        <div class="tiny dim" style="margin-top:3px">Log your first service to start accurate predictions.</div></div>
+        <button class="btn sm soft" data-act="open-maint">Log</button></div></div>` : ''}
+
+    <div class="sectitle"><h2>Recent activity</h2><button data-act="open-maint">History</button></div>
+    <div class="card" style="padding:4px 16px">
+      ${recent.length ? recent.map(s => `<div class="lrow" data-act="open-service" data-id="${s.id}">
+        <div class="ico">${icon(mtById(s.type).icon, 19)}</div>
+        <div class="grow"><div class="t">${esc(mtById(s.type).name)}</div><div class="s">${fmtDate(s.date)} · ${miles(s.mileage)} mi${s.shop ? ' · ' + esc(s.shop) : ''}</div></div>
+        <div class="amt">${s.cost ? money(s.cost) : ''}</div>
+      </div>`).join('') : `<div class="lrow"><div class="grow"><div class="s" style="padding:8px 0">No service records yet.</div></div></div>`}
+    </div>
+
+    <div class="sectitle"><h2>Quick actions</h2></div>
+    <div class="grid2" style="gap:11px">
+      ${[['log-service','Add service','wrench'],['add-exp','Add expense','wallet'],['add-fuel','Log fuel','fuel'],['open-report','Service report','doc']].map(([a, l, i]) =>
+        `<button class="card tap" style="display:flex;align-items:center;gap:11px;padding:15px" data-act="${a}">
+          <div style="color:#8AB8FF">${icon(i, 19)}</div><div class="small" style="font-weight:650">${l}</div></button>`).join('')}
+    </div>
+
+    <div class="row gap8 center tiny dim" style="justify-content:center;margin-top:24px;line-height:1.5;text-align:center">
+      ${icon('shield', 13)} <span>Your data stays on this device until you connect a cloud account.</span>
+    </div>
+  </div>`;
+}
+
+on('pick-veh', (t) => { state.vehicleId = t.dataset.id; render(); });
+on('open-veh', (t) => { state.vehicleId = t.dataset.id; go('vehicle'); });
+on('settings', () => go('settings'));
+on('open-maint', () => go('maint'));
+on('open-report', () => go('report'));
+
+/* ---------------- GARAGE ---------------- */
+function viewGarage(){
+  const list = D.veh();
+  const p = plan();
+  const atLimit = list.length >= p.vehicles;
+  return `<div class="screen">
+    ${head('My Garage', list.length + ' vehicle' + (list.length === 1 ? '' : 's'),
+      `<button class="iconbtn" data-act="veh-new" aria-label="Add vehicle">${icon('plus', 20)}</button>`)}
+    ${list.length ? `<div class="col gap14">
+      ${list.map(v => {
+        const h = healthOf(v);
+        return `<div class="vcard" data-act="open-veh" data-id="${v.id}">
+          <div class="art">
+            ${v.photo ? `<img data-img="${esc(v.photo)}" style="opacity:0;transition:opacity .3s" alt="">` : `<div class="ph">${icon('car', 62)}</div>`}
+            <div class="fade"></div>
+            <div style="position:absolute;top:12px;left:14px"><span class="badge ${h.level === 'bad' ? 'bad' : h.level === 'warn' ? 'warn' : 'ok'}">${h.label}</span></div>
+          </div>
+          <div class="body">
+            <div class="nick">${esc(v.nickname || 'Vehicle')}</div>
+            <div class="nm">${esc(vehicleDesc(v))}</div>
+            <div class="sub">${v.vin ? 'VIN ' + esc(v.vin.slice(-8)) : 'No VIN on file'}${v.tireSize ? ' · ' + esc(v.tireSize) : ''}</div>
+            <div class="foot">
+              <div><div class="mi">${miles(v.mileage)}<span>mi</span></div><div class="tiny dim" style="margin-top:2px">Odometer</div></div>
+              <div style="text-align:right"><div class="amt">${money(D.spend(v.id))}</div><div class="tiny dim" style="margin-top:2px">Total spent</div></div>
+            </div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>` : emptyBox('car', 'No vehicles yet', 'Add your first car, truck or SUV to start tracking maintenance and costs.', `<button class="btn primary mt16" data-act="veh-new">Add a vehicle</button>`)}
+
+    ${atLimit ? `<div class="card mt16" style="border-color:rgba(59,130,246,.28);background:rgba(59,130,246,.06)">
+      <div class="row gap10"><div style="color:#8AB8FF">${icon('crown', 20)}</div>
+        <div class="grow"><div class="small" style="font-weight:650">${p.vehicles === 1 ? 'Free plan: 1 vehicle' : 'Vehicle limit reached'}</div>
+        <div class="tiny dim" style="margin-top:3px">Premium unlocks unlimited vehicles, AI assistance and full reports.</div></div></div>
+      <button class="btn primary wide sm mt12" data-act="open-plan">See plans</button>
+    </div>` : ''}
+    <button class="btn ghost wide mt16" data-act="veh-new">${icon('plus', 17)} Add another vehicle</button>
+  </div>`;
+}
+
+/* ---------------- VEHICLE DETAIL ---------------- */
+function viewVehicle(){
+  const v = D.vehById(state.vehicleId) || D.cur();
+  if (!v) return `<div class="screen">${emptyBox('car','Vehicle not found','It may have been deleted.')}</div>`;
+  const h = healthOf(v);
+  const svc = D.services(v.id);
+  const due = dueItems(v).filter(d => d.status !== 'none').slice(0, 6);
+  const exps = D.expenses(v.id);
+  const mods = D.mods(v.id);
+  const fuel = D.fuel(v.id);
+  const tab = state.tab;
+  const T = [['overview','Overview'],['service','Service'],['costs','Costs'],['fuel','Fuel'],['mods','Mods']];
+
+  let body = '';
+  if (tab === 'overview'){
+    body = `<div class="stats">
+        ${statCard('Health score', h.score + '/100', h.label, h.level === 'bad' ? '#FF8189' : h.level === 'warn' ? '#FFC45C' : '#4BE39B')}
+        ${statCard('Records', String(svc.length), 'Service entries')}
+        ${statCard('Lifetime', money(D.spend(v.id)), 'Total cost')}
+        ${statCard('Avg / month', money(avgMonthly(v.id)), 'Last 12 months')}
+      </div>
+      <div class="sectitle"><h2>Vehicle details</h2></div>
+      <div class="card">
+        ${[['Year', v.year],['Make', v.make],['Model', v.model],['Trim', v.trim || '—'],['Engine', v.engine || '—'],
+           ['Odometer', miles(v.mileage) + ' mi'],['VIN', v.vin || '—'],['Plate', v.plate || '—'],['Tire size', v.tireSize || '—'],
+           ['Warranty', v.warranty || '—'],['Est. value', v.resale ? money(v.resale) : '—']]
+          .map(([k, val]) => `<div class="kv"><div class="k">${k}</div><div class="v">${esc(val)}</div></div>`).join('')}
+      </div>
+      <div class="sectitle"><h2>Upcoming service</h2></div>
+      <div class="card" style="padding:4px 16px">
+        ${due.length ? due.map(it => `<div class="lrow" data-act="log-service" data-type="${it.type.id}">
+          <div class="ico" style="color:${it.status==='over'?'#FF8189':it.status==='soon'?'#FFC45C':'#8AB8FF'}">${icon(it.type.icon, 18)}</div>
+          <div class="grow"><div class="t">${esc(it.type.name)}</div><div class="s">${it.nextDate ? fmtDate(it.nextDate) : ''}${it.nextMi ? (it.nextDate ? ' · ' : '') + miles(it.nextMi) + ' mi' : ''}</div></div>
+          <span class="badge ${it.status==='over'?'bad':it.status==='soon'?'warn':'ok'}">${it.status === 'over' ? 'Late' : it.status === 'soon' ? 'Soon' : 'OK'}</span>
+        </div>`).join('') : `<div class="lrow"><div class="grow"><div class="s" style="padding:10px 0">Nothing scheduled. Log a service to start tracking.</div></div></div>`}
+      </div>
+      <button class="btn primary wide mt16" data-act="veh-edit" data-id="${v.id}">${icon('edit', 17)} Edit vehicle</button>
+      <button class="btn danger wide mt12" data-act="veh-del" data-id="${v.id}">${icon('trash', 17)} Delete vehicle</button>`;
+  } else if (tab === 'service'){
+    body = svc.length ? `<div class="timeline">${svc.map(s => {
+      const t = mtById(s.type);
+      return `<div class="tl ${s.type === 'oil' ? 'ok' : ''}">
+        <div class="card" data-act="open-service" data-id="${s.id}">
+          <div class="row between" style="align-items:flex-start">
+            <div><div style="font-size:14.5px;font-weight:700">${esc(t.name)}</div>
+              <div class="tiny dim" style="margin-top:3px">${fmtDate(s.date)} · ${miles(s.mileage)} mi</div></div>
+            <div class="amt">${s.cost ? money(s.cost) : '—'}</div>
+          </div>
+          ${s.shop ? `<div class="tiny muted mt8" style="margin-top:8px">${esc(s.shop)}</div>` : ''}
+          ${s.notes ? `<div class="small muted mt8" style="margin-top:8px;line-height:1.45">${esc(s.notes)}</div>` : ''}
+          ${(s.receipts && s.receipts.length) ? `<div class="row gap6 mt8" style="margin-top:9px;flex-wrap:wrap">${s.receipts.map(r => `<img data-img="${esc(r)}" style="width:46px;height:46px;object-fit:cover;border-radius:9px;border:1px solid var(--line2);opacity:0;transition:opacity .3s" alt="receipt">`).join('')}</div>` : ''}
+        </div></div>`;
+    }).join('')}</div>` : emptyBox('wrench', 'No service records', 'Log your first oil change, repair or inspection to build the history.', `<button class="btn primary mt16" data-act="log-service">Log a service</button>`);
+    body += `<button class="btn ghost wide mt16" data-act="log-service">${icon('plus', 17)} Add service record</button>`;
+  } else if (tab === 'costs'){
+    body = costPanel(v) + `<button class="btn ghost wide mt16" data-act="add-exp">${icon('plus', 17)} Add expense</button>`;
+  } else if (tab === 'fuel'){
+    const mpg = calcMpg(fuel);
+    body = `<div class="stats">${statCard('Avg economy', mpg ? mpg.toFixed(1) : '—', mpg ? 'MPG (full tanks)' : 'Log 2+ fill-ups')}
+      ${statCard('Fuel spend', money(fuel.reduce((a, f) => a + num(f.cost), 0)), fuel.length + ' fill-ups')}</div>
+      <div class="sectitle"><h2>Fill-up log</h2></div>
+      <div class="card" style="padding:4px 16px">
+        ${fuel.length ? fuel.map(f => `<div class="lrow">
+          <div class="ico">${icon('fuel', 18)}</div>
+          <div class="grow"><div class="t">${num(f.gallons).toFixed(2)} gal ${f.full ? '' : '<span class="badge neutral" style="height:18px;font-size:9px">partial</span>'}</div>
+            <div class="s">${fmtDate(f.date)} · ${miles(f.odometer)} mi · ${f.price ? '$' + num(f.price).toFixed(2) + '/gal' : ''}</div></div>
+          <div class="amt">${money(f.cost)}</div></div>`).join('') : `<div class="lrow"><div class="grow"><div class="s" style="padding:10px 0">No fill-ups logged yet.</div></div></div>`}
+      </div>
+      <button class="btn ghost wide mt16" data-act="add-fuel">${icon('plus', 17)} Log fill-up</button>`;
+  } else {
+    body = mods.length ? `<div class="col gap10">${mods.map(m => `<div class="card">
+        <div class="row between"><div style="font-size:14.5px;font-weight:700">${esc(m.name)}</div><div class="amt">${m.cost ? money(m.cost) : ''}</div></div>
+        <div class="tiny dim" style="margin-top:4px">${esc(m.brand || '—')}${m.date ? ' · ' + fmtDate(m.date) : ''}</div>
+        ${m.notes ? `<div class="small muted" style="margin-top:8px">${esc(m.notes)}</div>` : ''}
+      </div>`).join('')}
+      <button class="btn ghost wide" data-act="add-mod">${icon('plus', 17)} Add modification</button></div>`
+      : emptyBox('gear', 'No modifications', 'Track aftermarket parts, upgrades and what you spent on them.', `<button class="btn primary mt16" data-act="add-mod">Add modification</button>`);
+  }
+
+  return `<div class="screen">
+    <div class="row gap10" style="margin-bottom:16px">
+      <button class="backbtn" data-act="back" data-to="garage">${icon('back', 18)}</button>
+      <div class="grow"><div class="small" style="font-weight:650" >${esc(vehicleName(v))}</div><div class="tiny dim">${esc(vehicleDesc(v))}</div></div>
+      <button class="iconbtn" data-act="log-service" aria-label="Log service">${icon('plus', 19)}</button>
+      <button class="iconbtn" data-act="veh-edit" data-id="${v.id}" aria-label="Edit">${icon('edit', 18)}</button>
+    </div>
+    <div class="chips" style="margin-bottom:14px">
+      ${T.map(([id, l]) => `<button class="chip ${tab === id ? 'on' : ''}" data-act="vtab" data-tab="${id}">${l}</button>`).join('')}
+    </div>
+    ${body}
+  </div>`;
+}
+
+on('vtab', (t) => { state.tab = t.dataset.tab; render(); });
+
+function avgMonthly(vehId){
+  const from = new Date(); from.setMonth(from.getMonth() - 11); const f = from.toISOString().slice(0, 10);
+  const total = D.spend(vehId, f);
+  return Math.round(total / 12);
+}
+function calcMpg(fuel){
+  const rows = fuel.slice().sort((a, b) => (a.date || '').localeCompare(b.date || '') || num(a.odometer) - num(b.odometer));
+  let totalMi = 0, totalGal = 0;
+  for (let i = 1; i < rows.length; i++){
+    const prev = rows[i - 1], cur = rows[i];
+    const d = num(cur.odometer) - num(prev.odometer);
+    if (prev.full && cur.full && d > 0 && num(cur.gallons) > 0){
+      totalMi += d; totalGal += num(cur.gallons);
+    }
+  }
+  return totalGal > 0 ? totalMi / totalGal : 0;
+}
+
+/* cost panel shared by vehicle + expenses tab */
+function costPanel(v){
+  const exps = D.expenses(v.id);
+  const month = exps.filter(e => monthKey(e.date) === thisMonth()).reduce((a, e) => a + num(e.amount), 0);
+  const year = exps.filter(e => (e.date || '').slice(0, 4) === String(new Date().getFullYear())).reduce((a, e) => a + num(e.amount), 0);
+  const life = exps.reduce((a, e) => a + num(e.amount), 0);
+  const byCat = EXP_CATS.map(c => ({ ...c, value: exps.reduce((a, e) => a + (e.category === c.id ? num(e.amount) : 0), 0) })).filter(c => c.value > 0);
+  const last6 = [];
+  for (let i = 5; i >= 0; i--){
+    const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - i);
+    const k = d.toISOString().slice(0, 7);
+    last6.push({ k, label: MONTHS[d.getMonth()], value: exps.filter(e => monthKey(e.date) === k).reduce((a, e) => a + num(e.amount), 0) });
+  }
+  const max = Math.max(1, ...last6.map(m => m.value));
+  const advanced = can('analytics');
+  return `<div class="stats">
+      ${statCard('This month', money(month), new Date().toLocaleDateString('en-US',{month:'long'}))}
+      ${statCard('This year', money(year), String(new Date().getFullYear()))}
+      ${statCard('Lifetime', money(life), exps.length + ' expenses')}
+      ${statCard('Avg / month', money(avgMonthly(v.id)), 'Trailing 12 mo')}
+    </div>
+    <div class="card mt12">
+      <div class="row gap14">
+        ${byCat.length ? donut(byCat, byCat.reduce((a, c) => a + c.value, 0), money(byCat.reduce((a, c) => a + c.value, 0))) : `<div style="width:132px;height:132px;display:grid;place-items:center;color:var(--txt3)">${icon('chart', 34)}</div>`}
+        <div class="legend">${byCat.slice(0, 5).map(c => `<div class="li"><i class="dot" style="background:${c.color}"></i><span class="ellip">${c.name}</span><b>${money(c.value)}</b></div>`).join('') || '<div class="small dim">No expenses yet</div>'}</div>
+      </div>
+    </div>
+    <div class="card mt12">
+      <div class="row between"><div class="small" style="font-weight:650">Last 6 months</div><div class="tiny dim">${advanced ? '' : 'Basic view'}</div></div>
+      <div class="bars">${last6.map((m, i) => `<div class="b ${i === 5 ? 'cur' : ''}"><div class="bar" style="height:${Math.max(3, (m.value / max) * 88)}%"></div><div class="lb">${m.label}</div></div>`).join('')}</div>
+    </div>`;
+}
+/* =========================================================
+   Maintenance
+   ========================================================= */
+function viewMaint(){
+  const list = D.veh();
+  if (!list.length) return `<div class="screen">${head('Maintenance','No vehicles yet')}${emptyBox('car','Add a vehicle first','Maintenance tracking is per-vehicle.',`<button class="btn primary mt16" data-act="veh-new">Add a vehicle</button>`)}</div>`;
+  const v = D.cur();
+  const due = dueItems(v);
+  const over = due.filter(d => d.status === 'over');
+  const soon = due.filter(d => d.status === 'soon');
+  const ok = due.filter(d => d.status === 'ok');
+  const none = due.filter(d => d.status === 'none');
+  const svc = D.services(v.id);
+
+  return `<div class="screen">
+    ${head('Maintenance', vehicleDesc(v), `<button class="iconbtn" data-act="log-service">${icon('plus', 20)}</button>`)}
+    ${list.length > 1 ? `<div class="chips" style="margin-bottom:14px">${list.map(x => `<button class="chip ${x.id === v.id ? 'on' : ''}" data-act="pick-veh" data-id="${x.id}">${icon('car',15)}${esc(vehicleName(x))}</button>`).join('')}</div>` : ''}
+
+    <div class="stats">
+      ${statCard('Overdue', String(over.length), over.length ? 'Needs service now' : 'Nothing past due', over.length ? '#FF8189' : null)}
+      ${statCard('Due soon', String(soon.length), 'Within your window', soon.length ? '#FFC45C' : null)}
+    </div>
+
+    ${over.length ? `<div class="sectitle"><h2 style="color:#FF8189">Overdue</h2></div>
+      <div class="card" style="padding:4px 16px;border-color:rgba(255,77,87,.28)">${over.map(renderDueRow).join('')}</div>` : ''}
+    ${soon.length ? `<div class="sectitle"><h2 style="color:#FFC45C">Due soon</h2></div>
+      <div class="card" style="padding:4px 16px">${soon.map(renderDueRow).join('')}</div>` : ''}
+    ${ok.length ? `<div class="sectitle"><h2>Up to date</h2></div>
+      <div class="card" style="padding:4px 16px">${ok.slice(0, 8).map(renderDueRow).join('')}</div>` : ''}
+    ${none.length ? `<div class="sectitle"><h2>Not tracked yet</h2>${none.length > 4 ? `<button data-act="none-toggle">${state.noneOpen ? 'Show less' : 'Show all ' + none.length}</button>` : ''}</div>
+      <div class="card" style="padding:4px 16px">${none.slice(0, state.noneOpen ? none.length : 4).map(renderDueRow).join('')}</div>` : ''}
+
+    <div class="sectitle"><h2>Service history</h2><button data-act="open-report">Report</button></div>
+    ${svc.length ? `<div class="timeline">${svc.map(s => {
+      const t = mtById(s.type);
+      return `<div class="tl"><div class="card" data-act="open-service" data-id="${s.id}">
+        <div class="row between"><div><div style="font-size:14px;font-weight:700">${esc(t.name)}</div>
+          <div class="tiny dim" style="margin-top:3px">${fmtDate(s.date)} · ${miles(s.mileage)} mi</div></div>
+          <div class="amt">${s.cost ? money(s.cost) : '—'}</div></div>
+        ${s.shop ? `<div class="tiny muted" style="margin-top:7px">${esc(s.shop)}</div>` : ''}
+      </div></div>`;
+    }).join('')}</div>` : emptyBox('wrench','No records yet','Every oil change, tire rotation and repair you log makes your predictions sharper.', `<button class="btn primary mt16" data-act="log-service">Log first service</button>`)}
+
+    <div class="sectitle"><h2>Custom reminders</h2><button data-act="add-reminder">Add</button></div>
+    <div class="card" style="padding:4px 16px">${renderReminders(v)}</div>
+  </div>
+  <button class="fab" data-act="log-service" aria-label="Log service">${icon('plus', 26)}</button>`;
+}
+
+function renderDueRow(it){
+  const t = it.type;
+  const color = it.status === 'over' ? '#FF8189' : it.status === 'soon' ? '#FFC45C' : it.status === 'none' ? '#6C7686' : '#4BE39B';
+  const detail = it.status === 'none' ? 'No service history' :
+    [it.nextDate ? fmtDate(it.nextDate) : null, it.nextMi != null ? miles(it.nextMi) + ' mi' : null].filter(Boolean).join(' · ');
+  const sub = it.last ? `Last: ${fmtShort(it.last.date)} @ ${miles(it.last.mileage)} mi` : detail;
+  return `<div class="lrow" data-act="log-service" data-type="${t.id}">
+    <div class="ico" style="color:${color}">${icon(t.icon, 18)}</div>
+    <div class="grow"><div class="t">${esc(t.name)}</div><div class="s">${esc(sub)}</div></div>
+    <div style="text-align:right">
+      <span class="badge ${it.status === 'over' ? 'bad' : it.status === 'soon' ? 'warn' : it.status === 'none' ? 'neutral' : 'ok'}">${it.status === 'over' ? 'Late' : it.status === 'soon' ? 'Soon' : it.status === 'none' ? 'No data' : 'OK'}</span>
+      ${it.dDate != null ? `<div class="tiny dim" style="margin-top:3px">${rel(it.nextDate)}</div>` : ''}
+    </div>
+  </div>`;
+}
+
+function renderReminders(v){
+  const rs = D.reminders(v.id);
+  if (!rs.length) return `<div class="lrow"><div class="grow"><div class="s" style="padding:10px 0">No custom reminders. Add registration, insurance or anything with a date.</div></div></div>`;
+  return rs.map(r => {
+    const d = daysFrom(r.dueDate);
+    const st = d < 0 ? 'bad' : d <= num((Auth.user().prefs || {}).leadDays, 30) ? 'warn' : 'ok';
+    return `<div class="lrow">
+      <div class="ico" style="color:${st === 'bad' ? '#FF8189' : st === 'warn' ? '#FFC45C' : '#4BE39B'}">${icon(r.kind === 'registration' ? 'doc' : r.kind === 'insurance' ? 'shield' : 'bell', 18)}</div>
+      <div class="grow"><div class="t">${esc(r.title)}</div><div class="s">${fmtDate(r.dueDate)} · ${rel(r.dueDate)}</div></div>
+      <button class="iconbtn" style="width:32px;height:32px;border-radius:10px" data-act="del-reminder" data-id="${r.id}">${icon('trash', 15)}</button>
+    </div>`;
+  }).join('');
+}
+
+/* =========================================================
+   Expenses
+   ========================================================= */
+function viewExpenses(){
+  const list = D.veh();
+  if (!list.length) return `<div class="screen">${head('Expenses','No vehicles yet')}${emptyBox('wallet','Add a vehicle first','Log spending per vehicle to build real cost reports.',`<button class="btn primary mt16" data-act="veh-new">Add a vehicle</button>`)}</div>`;
+  const v = D.cur();
+  const range = state.expRange;
+  const all = D.expenses(v.id);
+  const now = new Date();
+  let filtered = all, rangeLabel = 'All time';
+  if (range === 'month'){ filtered = all.filter(e => monthKey(e.date) === thisMonth()); rangeLabel = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }); }
+  else if (range === 'year'){ filtered = all.filter(e => (e.date || '').slice(0, 4) === String(now.getFullYear())); rangeLabel = String(now.getFullYear()); }
+  const total = filtered.reduce((a, e) => a + num(e.amount), 0);
+  const byCat = EXP_CATS.map(c => ({ ...c, value: filtered.reduce((a, e) => a + (e.category === c.id ? num(e.amount) : 0), 0) })).filter(c => c.value > 0).sort((a, b) => b.value - a.value);
+  const groups = {};
+  filtered.forEach(e => { const k = monthKey(e.date); (groups[k] = groups[k] || []).push(e); });
+  const keys = Object.keys(groups).sort((a, b) => b.localeCompare(a));
+
+  return `<div class="screen">
+    ${head('Expenses', vehicleDesc(v), `<button class="iconbtn" data-act="add-exp">${icon('plus', 20)}</button>`)}
+    <div class="seg" style="margin-bottom:16px">
+      ${[['month','Month'],['year','Year'],['all','All time']].map(([id, l]) => `<button class="${range === id ? 'on' : ''}" data-act="exp-range" data-r="${id}">${l}</button>`).join('')}
+    </div>
+    <div class="hero">
+      <div class="tiny dim" style="letter-spacing:.08em;text-transform:uppercase;font-weight:700">${esc(rangeLabel)} total</div>
+      <div style="font-size:38px;font-weight:800;letter-spacing:-.045em;margin-top:6px;font-variant-numeric:tabular-nums">${money(total)}</div>
+      <div class="small muted" style="margin-top:6px">${filtered.length} transaction${filtered.length === 1 ? '' : 's'} · avg ${money(filtered.length ? total / filtered.length : 0)}</div>
+      <div class="row gap8 mt12" style="margin-top:14px">
+        <button class="btn sm soft" data-act="add-exp">${icon('plus', 14)} Add expense</button>
+        <button class="btn sm ghost" data-act="open-report">${icon('doc', 14)} Report</button>
+      </div>
+    </div>
+
+    ${byCat.length ? `<div class="card mt12">
+      <div class="row gap14">
+        ${donut(byCat, total, money(total))}
+        <div class="legend">${byCat.slice(0, 6).map(c => `<div class="li"><i class="dot" style="background:${c.color}"></i><span class="ellip">${c.name}</span><b>${money(c.value)}</b></div>`).join('')}</div>
+      </div>
+      ${byCat.length > 6 ? `<div class="tiny dim mt12">+ ${byCat.length - 6} more categories</div>` : ''}
+    </div>` : ''}
+
+    ${keys.length ? keys.map(k => {
+      const rows = groups[k].slice().sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+      const sum = rows.reduce((a, e) => a + num(e.amount), 0);
+      const d = new Date(k + '-02');
+      return `<div class="sectitle"><h2>${d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</h2><span class="small dim">${money(sum)}</span></div>
+      <div class="card" style="padding:4px 16px">${rows.map(e => {
+        const c = catById(e.category);
+        return `<div class="lrow" data-act="open-exp" data-id="${e.id}">
+          <div class="ico" style="color:${c.color}">${icon(c.icon, 18)}</div>
+          <div class="grow"><div class="t">${esc(e.note || c.name)}</div><div class="s">${fmtDate(e.date)} · ${esc(c.name)}${e.odometer ? ' · ' + miles(e.odometer) + ' mi' : ''}</div></div>
+          <div class="amt">${money(e.amount)}</div>
+        </div>`; }).join('')}</div>`;
+    }).join('') : emptyBox('wallet','No expenses in this range','Log gas, insurance, repairs and payments to see your true cost of ownership.', `<button class="btn primary mt16" data-act="add-exp">Add an expense</button>`)}
+  </div>
+  <button class="fab" data-act="add-exp" aria-label="Add expense">${icon('plus', 26)}</button>`;
+}
+on('none-toggle', () => { state.noneOpen = !state.noneOpen; render(); });
+on('exp-range', (t) => { state.expRange = t.dataset.r; render(); });
+
+/* =========================================================
+   AI Assistant
+   ========================================================= */
+function viewAI(){
+  const cfg = Cfg.load();
+  const hasKey = !!cfg.aiKey;
+  const u = Auth.user();
+  const v = D.cur();
+  const log = state.aiLog;
+
+  const suggestions = [
+    'Why is my car making a rattling noise over bumps?',
+    'What does a flashing check engine light mean?',
+    'Is $840 reasonable for brake pads and rotors?',
+    'What should I service at 100,000 miles?'
+  ];
+
+  let head_ = `<div class="row gap10" style="margin-bottom:16px">
+    <div style="width:40px;height:40px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(150deg,#8B5CF6,#5B21B6);box-shadow:0 8px 22px -10px rgba(139,92,246,.9)">${icon('sparkles', 20)}</div>
+    <div class="grow"><div style="font-size:17px;font-weight:700;letter-spacing:-.02em">Car Assistant</div>
+      <div class="tiny dim">General guidance · not a diagnosis</div></div>
+    <button class="iconbtn" data-act="ai-settings" aria-label="Assistant settings">${icon('gear', 18)}</button>
+  </div>`;
+
+  let body;
+  if (!u || !plan().ai){
+    body = `${head_}
+      <div class="empty" style="border-style:solid;border-color:rgba(139,92,246,.3);background:rgba(139,92,246,.06)">
+        <div class="em" style="background:rgba(139,92,246,.16);border-color:rgba(139,92,246,.3);color:#C4B5FD">${icon('crown', 26)}</div>
+        <h3>The AI assistant is a Premium feature</h3>
+        <p>Ask about noises, warning lights, service intervals and repair quotes — with your vehicle's details in context.</p>
+        <button class="btn primary mt16" data-act="open-plan">See plans</button>
+      </div>
+      <div class="sectitle"><h2>Example questions</h2></div>
+      <div class="col gap8">${suggestions.map(s => `<div class="card" style="padding:13px 15px;opacity:.55"><div class="small muted">${esc(s)}</div></div>`).join('')}</div>`;
+  } else if (!hasKey){
+    body = `${head_}
+      <div class="card" style="border-color:rgba(255,176,32,.3);background:rgba(255,176,32,.06)">
+        <div class="row gap10"><div style="color:#FFC45C">${icon('alert', 20)}</div>
+          <div class="grow"><div class="small" style="font-weight:700">No AI model connected</div>
+          <div class="tiny muted" style="margin-top:4px;line-height:1.5">CarKeeper calls an LLM provider directly from your device. Add an API key to activate the assistant — nothing is hard-coded and no key ships with the app.</div></div></div>
+        <button class="btn primary wide sm mt12" data-act="ai-settings">Connect a model</button>
+      </div>
+      <div class="card mt12">
+        <div class="small" style="font-weight:650;margin-bottom:8px">How it connects</div>
+        <div class="tiny muted" style="line-height:1.7">1. Get a key from OpenAI, Anthropic or any OpenAI-compatible endpoint.<br>
+        2. Paste it in Assistant settings — it is stored only in this browser.<br>
+        3. For production, proxy requests through your own backend so keys never live on a client (see README).</div>
+      </div>
+      <div class="sectitle"><h2>Example questions</h2></div>
+      <div class="col gap8">${suggestions.map(s => `<div class="card" style="padding:13px 15px"><div class="small muted">${esc(s)}</div></div>`).join('')}</div>`;
+  } else {
+    body = `${head_}
+      ${v ? `<div class="chips" style="margin-bottom:12px"><div class="chip on">${icon('car', 15)}${esc(vehicleDesc(v))} · ${miles(v.mileage)} mi</div></div>` : ''}
+      <div class="chat" id="chatlog">
+        <div class="msg sys">Answers are general guidance based on the details you provided — not a mechanic's inspection. For safety-critical symptoms, stop driving and see a professional.</div>
+        ${log.map(m => `<div class="msg ${m.role === 'user' ? 'me' : 'ai'}">${esc(m.text)}</div>`).join('')}
+        ${state.aiBusy ? `<div class="msg ai"><span class="dim">Thinking…</span></div>` : ''}
+        ${!log.length ? `<div class="col gap8 mt12">${suggestions.map(s => `<button class="card tap" style="padding:12px 14px;text-align:left" data-act="ai-ask" data-q="${esc(s)}"><div class="small muted">${esc(s)}</div></button>`).join('')}</div>` : ''}
+      </div>
+      <div style="height:70px"></div>
+      <div class="chatbar"><div class="in">
+        <textarea id="ai-input" rows="1" placeholder="Ask about your vehicle…">${esc(state.aiDraft || '')}</textarea>
+        <button class="send" data-act="ai-send" ${state.aiBusy ? 'disabled' : ''}>${icon('chev', 20)}</button>
+      </div></div>`;
+  }
+  return `<div class="screen" style="${hasKey && plan().ai ? 'padding-bottom:calc(var(--tab-h) + 74px)' : ''}">${body}</div>`;
+}
+on('ai-ask', (t) => { state.aiDraft = t.dataset.q; render(); setTimeout(() => sendAI(t.dataset.q), 0); });
+on('ai-send', () => { const el = $('#ai-input'); if (el) sendAI(el.value); });
+
+async function sendAI(text){
+  text = String(text || '').trim();
+  if (!text || state.aiBusy) return;
+  const cfg = Cfg.load();
+  if (!cfg.aiKey){ toast('Connect an AI model first', 'bad'); return; }
+  state.aiLog.push({ role: 'user', text });
+  state.aiDraft = '';
+  state.aiBusy = true;
+  render();
+  const v = D.cur();
+  const due = v ? dueItems(v).filter(d => d.status !== 'none').slice(0, 6).map(d => `${d.type.name} (${d.status}, next ${d.nextDate || '—'} / ${d.nextMi ? miles(d.nextMi) + ' mi' : '—'})`).join('; ') : 'none';
+  const sys = `You are CarKeeper's vehicle assistant. Be concise, practical and plain-spoken for a non-mechanic. Structure answers as: likely causes (most to least probable), what to check or tell a mechanic, and cost ranges only when reasonably supported — label them as estimates in USD. Never claim to diagnose from a description; recommend a professional inspection for safety-critical issues (brakes, steering, fuel leaks, smoke, overheating). Vehicle: ${v ? `${v.year} ${v.make} ${v.model} ${v.trim || ''}, ${miles(v.mileage)} miles` : 'not specified'}. Tracked maintenance: ${due || 'none'}.`;
+  try {
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + cfg.aiKey },
+      body: JSON.stringify({ model: cfg.aiModel || 'gpt-4o-mini', temperature: 0.4,
+        messages: [{ role: 'system', content: sys }, ...state.aiLog.slice(-8).map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.text }))] })
+    });
+    if (!res.ok){
+      const t = await res.text();
+      throw new Error(res.status === 401 ? 'API key rejected (401). Check the key in Assistant settings.' : 'AI request failed (' + res.status + '). ' + t.slice(0, 140));
+    }
+    const j = await res.json();
+    const out = j.choices && j.choices[0] && j.choices[0].message ? j.choices[0].message.content : 'No response.';
+    state.aiLog.push({ role: 'assistant', text: out });
+  } catch (e) {
+    state.aiLog.push({ role: 'assistant', text: '⚠️ ' + (e.message || 'Network error') });
+  }
+  state.aiBusy = false;
+  render();
+  const log = $('#chatlog'); if (log) window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+}
+/* =========================================================
+   Sheets & forms
+   ========================================================= */
+function bindModal(){
+  const root = $('#modal-root');
+  if (root.dataset.bound) return;
+  root.dataset.bound = '1';
+  root.addEventListener('click', async (ev) => {
+    const t = ev.target.closest('[data-act]');
+    if (!t) return;
+    const fn = ACTIONS[t.getAttribute('data-act')];
+    if (!fn) return;
+    ev.preventDefault();
+    try { await fn(t, ev); } catch (e) { console.error(e); toast(e.message || 'Something went wrong', 'bad'); }
+  });
+  root.addEventListener('change', async (ev) => {
+    const t = ev.target.closest('[data-file]');
+    if (!t) return;
+    const fn = ACTIONS['file:' + t.getAttribute('data-file')];
+    if (fn) { try { await fn(t, ev); } catch (e) { toast(e.message || 'Upload failed', 'bad'); } }
+  });
+}
+
+function field(label, inner, hint){
+  return `<div class="field"><label>${esc(label)}</label>${inner}${hint ? `<div class="hint">${esc(hint)}</div>` : ''}</div>`;
+}
+function input(name, opts){
+  opts = opts || {};
+  return `<input class="input" name="${name}" ${opts.type ? 'type="' + opts.type + '"' : ''} ${opts.inputmode ? 'inputmode="' + opts.inputmode + '"' : ''}
+    ${opts.placeholder ? 'placeholder="' + esc(opts.placeholder) + '"' : ''} ${opts.value != null && opts.value !== '' ? 'value="' + esc(opts.value) + '"' : ''}
+    ${opts.step ? 'step="' + opts.step + '"' : ''} ${opts.maxlength ? 'maxlength="' + opts.maxlength + '"' : ''} ${opts.required ? 'required' : ''}>`;
+}
+function select(name, options, value){
+  return `<select class="input" name="${name}">${options.map(([v, l]) => `<option value="${esc(v)}" ${String(value) === String(v) ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>`;
+}
+function closeBtn(){ return `<button class="btn ghost" data-act="close-sheet" type="button">Cancel</button>`; }
+on('close-sheet', () => closeSheet());
+
+/* ---------- vehicle create / edit ---------- */
+on('veh-new', () => {
+  if (!can('vehicle')){
+    toast('The free plan includes 1 vehicle', 'bad');
+    return go('plan');
+  }
+  state.tmpPhoto = null;
+  openVehicleForm(null);
+});
+on('veh-edit', (t) => { state.tmpPhoto = null; openVehicleForm(D.vehById(t.dataset.id)); });
+
+function openVehicleForm(v){
+  const isEdit = !!v;
+  const body = `<form id="vehform">
+    <div class="row gap13" style="margin-bottom:16px">
+      <div id="photoPrev" style="width:76px;height:76px;border-radius:18px;overflow:hidden;background:var(--surface3);display:grid;place-items:center;flex:0 0 auto;border:1px solid var(--line2);color:var(--txt3)">
+        ${v && v.photo ? `<img data-img="${esc(v.photo)}" style="width:100%;height:100%;object-fit:cover" alt="">` : icon('car', 28)}
+      </div>
+      <div class="grow">
+        <label class="btn ghost sm" style="display:inline-flex;cursor:pointer">${icon('camera', 15)} ${v && v.photo ? 'Change photo' : 'Add photo'}
+          <input type="file" accept="image/*" data-file="vehphoto" style="display:none"></label>
+        <div class="hint">Resized and stored on this device only.</div>
+      </div>
+    </div>
+    <div class="grid2">
+      ${field('Year', input('year', { inputmode: 'numeric', placeholder: '2019', value: v ? v.year : '', required: true }))}
+      ${field('Make', input('make', { placeholder: 'Honda', value: v ? v.make : '', required: true }))}
+    </div>
+    <div class="grid2">
+      ${field('Model', input('model', { placeholder: 'Civic', value: v ? v.model : '', required: true }))}
+      ${field('Trim', input('trim', { placeholder: 'EX-L', value: v ? v.trim : '' }))}
+    </div>
+    <div class="grid2">
+      ${field('Engine', input('engine', { placeholder: '1.5L Turbo I4', value: v ? v.engine : '' }))}
+      ${field('Odometer', input('mileage', { inputmode: 'numeric', placeholder: '48250', value: v ? v.mileage : '', required: true }))}
+    </div>
+    <div class="grid2">
+      ${field('VIN', input('vin', { placeholder: 'Optional', maxlength: 17, value: v ? v.vin : '' }))}
+      ${field('Plate', input('plate', { placeholder: 'Optional', value: v ? v.plate : '' }))}
+    </div>
+    ${field('Nickname', input('nickname', { placeholder: 'Daily driver', value: v ? v.nickname : '' }))}
+    <div class="grid2">
+      ${field('Tire size', input('tireSize', { placeholder: '215/55R17', value: v ? v.tireSize : '' }))}
+      ${field('Est. value', input('resale', { inputmode: 'decimal', placeholder: '14500', value: v && v.resale ? v.resale : '' }))}
+    </div>
+    ${field('Warranty notes', input('warranty', { placeholder: 'Powertrain 5yr/60k — exp. 2026', value: v ? v.warranty : '' }))}
+    <div class="err"></div>
+  </form>`;
+  const sh = sheet({
+    title: isEdit ? 'Edit vehicle' : 'Add a vehicle',
+    sub: isEdit ? vehicleDesc(v) : 'The more detail you add, the better your predictions.',
+    body,
+    actions: `${closeBtn()}<button class="btn primary" id="vehSave">${isEdit ? 'Save changes' : 'Add vehicle'}</button>`
+  });
+  $('#vehSave', sh).addEventListener('click', async () => {
+    const f = $('#vehform', sh);
+    const d = Object.fromEntries(new FormData(f));
+    const err = $('.err', f);
+    try {
+      if (!d.year || !d.make || !d.model) throw new Error('Year, make and model are required.');
+      if (isEdit){
+        Object.assign(v, {
+          year: int(d.year), make: d.make.trim(), model: d.model.trim(), trim: d.trim.trim(), engine: d.engine.trim(),
+          mileage: int(d.mileage), vin: d.vin.trim().toUpperCase(), plate: d.plate.trim().toUpperCase(),
+          nickname: d.nickname.trim(), tireSize: d.tireSize.trim(), warranty: d.warranty.trim(), resale: num(d.resale)
+        });
+        if (state.tmpPhoto){ v.photo = state.tmpPhoto; }
+        Store.db.odo.push({ id: uid(), userId: v.userId, vehicleId: v.id, miles: num(v.mileage), date: todayISO() });
+        Store.save();
+        closeSheet(); toast('Vehicle updated', 'ok'); render();
+      } else {
+        const nv = createVehicle(Object.assign({}, d, { photo: state.tmpPhoto }));
+        Store.db.odo.push({ id: uid(), userId: nv.userId, vehicleId: nv.id, miles: num(nv.mileage), date: todayISO() });
+        Store.save();
+        state.vehicleId = nv.id;
+        closeSheet(); toast('Vehicle added', 'ok');
+        go('vehicle', { tab: 'overview' });
+      }
+    } catch (e) { err.textContent = e.message; }
+  });
+}
+ACTIONS['file:vehphoto'] = async (inp) => {
+  const file = inp.files && inp.files[0]; if (!file) return;
+  const dataUrl = await Img.compress(file, 1500, 0.75);
+  const id = 'p_' + uid();
+  await Img.put(id, dataUrl);
+  imgCache.set(id, dataUrl);
+  state.tmpPhoto = id;
+  const prev = $('#photoPrev');
+  if (prev) prev.innerHTML = `<img src="${dataUrl}" style="width:100%;height:100%;object-fit:cover" alt="">`;
+};
+
+on('veh-del', (t) => {
+  const v = D.vehById(t.dataset.id);
+  if (!v) return;
+  sheet({
+    title: 'Delete this vehicle?',
+    sub: vehicleDesc(v),
+    body: `<div class="card" style="border-color:rgba(255,77,87,.3);background:rgba(255,77,87,.06)">
+      <div class="small" style="line-height:1.55">This permanently removes the vehicle and all of its service records, expenses, fuel logs and reminders from this device. This cannot be undone.</div></div>`,
+    actions: `${closeBtn()}<button class="btn danger" id="delConfirm">Delete permanently</button>`
+  });
+  $('#delConfirm').addEventListener('click', () => {
+    const db = Store.db;
+    db.vehicles = db.vehicles.filter(x => x.id !== v.id);
+    ['services', 'expenses', 'fuel', 'mods', 'reminders', 'odo'].forEach(k => { db[k] = db[k].filter(x => x.vehicleId !== v.id); });
+    Store.save(); closeSheet(); toast('Vehicle deleted'); go('garage');
+  });
+});
+
+/* ---------- odometer ---------- */
+on('odo', (t) => {
+  const v = D.vehById(t.dataset.id) || D.cur();
+  if (!v) return;
+  let milesVal = v.mileage;
+  const sh = sheet({
+    title: 'Update mileage',
+    sub: 'Keep this current — every prediction depends on it.',
+    body: `<form id="odoform">
+      ${field('Current odometer', input('miles', { inputmode: 'numeric', value: v.mileage, required: true }))}
+      ${field('Date', input('date', { type: 'date', value: todayISO() }))}
+      <div class="hint">Logged ${D.odo(v.id).length} time${D.odo(v.id).length === 1 ? '' : 's'} · est. ${miles(avgMilesPerMonth(v))} mi/month</div>
+    </form>`,
+    actions: `${closeBtn()}<button class="btn primary" id="odoSave">Save mileage</button>`
+  });
+  $('#odoSave', sh).addEventListener('click', () => {
+    const d = Object.fromEntries(new FormData($('#odoform', sh)));
+    const m = int(d.miles);
+    if (!m || m < 0) return toast('Enter a valid mileage', 'bad');
+    v.mileage = m;
+    Store.db.odo.push({ id: uid(), userId: v.userId, vehicleId: v.id, miles: m, date: d.date || todayISO() });
+    Store.save(); closeSheet(); toast('Mileage updated', 'ok'); render();
+  });
+});
+
+/* ---------- service record ---------- */
+on('log-service', (t) => openServiceForm(null, t.dataset.type));
+on('open-service', (t) => {
+  const s = Store.db.services.find(x => x.id === t.dataset.id && D.owns(x));
+  if (!s) return;
+  const v = D.vehById(s.vehicleId);
+  sheet({
+    title: mtById(s.type).name,
+    sub: fmtDate(s.date) + ' · ' + miles(s.mileage) + ' mi',
+    body: `<div class="card">
+      <div class="kv"><div class="k">Cost</div><div class="v">${s.cost ? money(s.cost) : '—'}</div></div>
+      <div class="kv"><div class="k">Provider</div><div class="v">${esc(s.shop || '—')}</div></div>
+      <div class="kv"><div class="k">Next due</div><div class="v">${s.nextDate ? fmtDate(s.nextDate) : '—'}${s.nextMileage ? ' / ' + miles(s.nextMileage) + ' mi' : ''}</div></div>
+      <div class="kv"><div class="k">Vehicle</div><div class="v">${esc(v ? vehicleName(v) : '—')}</div></div>
+    </div>
+    ${s.notes ? `<div class="card mt12"><div class="tiny dim" style="margin-bottom:6px">NOTES</div><div class="small" style="line-height:1.55;white-space:pre-wrap">${esc(s.notes)}</div></div>` : ''}
+    ${(s.receipts && s.receipts.length) ? `<div class="small" style="font-weight:650;margin:16px 0 8px">Receipts & photos</div>
+      <div class="row gap8" style="flex-wrap:wrap">${s.receipts.map(r => `<img data-img="${esc(r)}" style="width:84px;height:84px;object-fit:cover;border-radius:12px;border:1px solid var(--line2);opacity:0;transition:opacity .3s" alt="">`).join('')}</div>` : ''}`,
+    actions: `<button class="btn danger" data-act="del-service" data-id="${s.id}">Delete</button><button class="btn primary" data-act="edit-service" data-id="${s.id}">Edit</button>`
+  });
+});
+on('edit-service', (t) => { closeSheet(); openServiceForm(t.dataset.id); });
+on('del-service', (t) => {
+  const s = Store.db.services.find(x => x.id === t.dataset.id);
+  if (!s) return;
+  sheet({ title: 'Delete this record?', sub: mtById(s.type).name + ' · ' + fmtDate(s.date),
+    body: `<div class="small muted">The linked expense entry stays in your expense history. Remove it separately from the Expenses tab if needed.</div>`,
+    actions: `${closeBtn()}<button class="btn danger" id="ds">Delete record</button>` });
+  $('#ds').addEventListener('click', () => {
+    Store.db.services = Store.db.services.filter(x => x.id !== s.id);
+    Store.save(); closeSheet(); toast('Record deleted'); render();
+  });
+});
+
+function openServiceForm(id, presetType){
+  const cur = id ? Store.db.services.find(x => x.id === id) : null;
+  const v = cur ? D.vehById(cur.vehicleId) : D.cur();
+  if (!v) return toast('Add a vehicle first', 'bad');
+  const typeId = (cur && cur.type) || presetType || 'oil';
+  const t = mtById(typeId);
+  const lastOf = D.services(v.id).find(s => s.type === typeId);
+  const sugMi = num(v.mileage) + (t.mi || 0);
+  const sugDate = addMonths(todayISO(), t.mo || 12);
+  const body = `<form id="sform">
+    ${field('Service type', select('type', MT.map(m => [m.id, m.name]), typeId))}
+    <div class="grid2">
+      ${field('Date', input('date', { type: 'date', value: cur ? cur.date : todayISO(), required: true }))}
+      ${field('Mileage', input('mileage', { inputmode: 'numeric', placeholder: String(v.mileage), value: cur ? cur.mileage : v.mileage, required: true }))}
+    </div>
+    <div class="grid2">
+      ${field('Cost', input('cost', { inputmode: 'decimal', placeholder: t.cost ? String(t.cost) : '0', value: cur ? cur.cost : '' }))}
+      ${field('Next service date', input('nextDate', { type: 'date', value: cur ? cur.nextDate : sugDate }))}
+    </div>
+    ${field('Next service mileage', input('nextMileage', { inputmode: 'numeric', value: cur ? cur.nextMileage : sugMi }), 'Leave as-is to use the factory interval (' + (t.mi ? miles(t.mi) + ' mi' : '—') + ' / ' + (t.mo ? t.mo + ' mo' : '—') + ').')}
+    ${field('Service provider', input('shop', { placeholder: 'Honda of Springfield', value: cur ? cur.shop : '' }))}
+    ${field('Notes', `<textarea class="input" name="notes" placeholder="What was done, parts used, symptoms…">${cur ? esc(cur.notes) : ''}</textarea>`)}
+    ${can('receipts') ? `<div class="field"><label>Receipts & photos</label>
+      <label class="btn ghost sm" style="display:inline-flex;cursor:pointer">${icon('camera', 15)} Attach
+        <input type="file" accept="image/*" multiple data-file="receipt" style="display:none"></label>
+      <div id="rcptPrev" class="row gap8 mt8" style="flex-wrap:wrap;margin-top:8px">${(cur && cur.receipts ? cur.receipts : []).map(r => `<img data-img="${esc(r)}" style="width:56px;height:56px;object-fit:cover;border-radius:10px;border:1px solid var(--line2);opacity:0;transition:opacity .3s" alt="">`).join('')}</div>
+    </div>` : `<div class="card" style="padding:12px;border-color:rgba(59,130,246,.25);background:rgba(59,130,246,.06)">
+      <div class="row between"><div class="tiny muted">Receipt & invoice storage</div><button class="tiny" style="color:#8AB8FF;font-weight:700" data-act="open-plan" type="button">Premium</button></div></div>`}
+    <div class="err"></div>
+  </form>`;
+  state.tmpReceipts = cur && cur.receipts ? cur.receipts.slice() : [];
+  const sh = sheet({
+    title: id ? 'Edit service record' : 'Log a service',
+    sub: vehicleDesc(v) + ' · ' + miles(v.mileage) + ' mi',
+    body,
+    actions: `${closeBtn()}<button class="btn primary" id="sSave">${id ? 'Save changes' : 'Save record'}</button>`
+  });
+  const typeSel = $('select[name=type]', sh);
+  typeSel.addEventListener('change', () => {
+    const nt = mtById(typeSel.value);
+    const nd = $('input[name=nextDate]', sh), nm = $('input[name=nextMileage]', sh), cc = $('input[name=cost]', sh);
+    if (nd) nd.value = addMonths(todayISO(), nt.mo || 12);
+    if (nm) nm.value = num(d$('input[name=mileage]', sh)) + (nt.mi || 0);
+    if (cc && !cc.value) cc.placeholder = String(nt.cost || 0);
+  });
+  $('#sSave', sh).addEventListener('click', () => {
+    const f = $('#sform', sh);
+    const d = Object.fromEntries(new FormData(f));
+    const err = $('.err', f);
+    if (!d.mileage || int(d.mileage) <= 0) { err.textContent = 'Enter the mileage at service.'; return; }
+    const rec = {
+      id: cur ? cur.id : uid(), userId: v.userId, vehicleId: v.id,
+      type: d.type, date: d.date || todayISO(), mileage: int(d.mileage), cost: num(d.cost),
+      shop: String(d.shop || '').trim(), notes: String(d.notes || '').trim(),
+      nextDate: d.nextDate || null, nextMileage: d.nextMileage ? int(d.nextMileage) : null,
+      receipts: state.tmpReceipts || [], createdAt: cur ? cur.createdAt : new Date().toISOString()
+    };
+    if (cur) Object.assign(cur, rec);
+    else Store.db.services.push(rec);
+    // keep odometer current
+    if (rec.mileage > num(v.mileage)){ v.mileage = rec.mileage; Store.db.odo.push({ id: uid(), userId: v.userId, vehicleId: v.id, miles: rec.mileage, date: rec.date }); }
+    // mirror into expenses
+    if (rec.cost > 0){
+      const linked = Store.db.expenses.find(e => e.serviceId === rec.id);
+      if (linked){ linked.amount = rec.cost; linked.date = rec.date; linked.odometer = rec.mileage; linked.note = mtById(rec.type).name; }
+      else Store.db.expenses.push({ id: uid(), userId: v.userId, vehicleId: v.id, serviceId: rec.id, category: 'maintenance',
+        amount: rec.cost, date: rec.date, note: mtById(rec.type).name, odometer: rec.mileage });
+    }
+    Store.save();
+    closeSheet(); toast(id ? 'Record updated' : 'Service logged', 'ok'); render();
+  });
+}
+function d$(sel, root){ const el = $(sel, root); return el ? el.value : ''; }
+ACTIONS['file:receipt'] = async (inp) => {
+  if (!can('receipts')) { toast('Receipt storage is a Premium feature', 'bad'); return; }
+  const files = Array.from(inp.files || []).slice(0, 5);
+  for (const file of files){
+    const dataUrl = await Img.compress(file, 1400, 0.7);
+    const id = 'r_' + uid();
+    await Img.put(id, dataUrl);
+    imgCache.set(id, dataUrl);
+    state.tmpReceipts = (state.tmpReceipts || []).concat(id);
+    const prev = $('#rcptPrev');
+    if (prev) prev.insertAdjacentHTML('beforeend', `<img src="${dataUrl}" style="width:56px;height:56px;object-fit:cover;border-radius:10px;border:1px solid var(--line2)" alt="">`);
+  }
+  toast(files.length + ' attachment' + (files.length === 1 ? '' : 's') + ' added', 'ok');
+};
+
+/* ---------- expenses ---------- */
+on('add-exp', () => openExpForm(null));
+on('open-exp', (t) => {
+  const e = Store.db.expenses.find(x => x.id === t.dataset.id && D.owns(x));
+  if (!e) return;
+  const c = catById(e.category);
+  sheet({
+    title: c.name, sub: fmtDate(e.date),
+    body: `<div class="card">
+      <div style="font-size:34px;font-weight:800;letter-spacing:-.04em">${money(e.amount)}</div>
+      ${e.note ? `<div class="small muted mt8" style="margin-top:8px">${esc(e.note)}</div>` : ''}
+      <div class="kv" style="margin-top:12px"><div class="k">Odometer</div><div class="v">${e.odometer ? miles(e.odometer) + ' mi' : '—'}</div></div>
+      <div class="kv"><div class="k">Vehicle</div><div class="v">${esc((D.vehById(e.vehicleId) || {}).nickname || vehicleName(D.vehById(e.vehicleId) || {}))}</div></div>
+      ${e.serviceId ? `<div class="kv"><div class="k">Linked service</div><div class="v">Yes</div></div>` : ''}
+    </div>`,
+    actions: `<button class="btn danger" data-act="del-exp" data-id="${e.id}">Delete</button><button class="btn primary" data-act="edit-exp" data-id="${e.id}">Edit</button>`
+  });
+});
+on('edit-exp', (t) => { closeSheet(); const e = Store.db.expenses.find(x => x.id === t.dataset.id); openExpForm(e); });
+on('del-exp', (t) => {
+  Store.db.expenses = Store.db.expenses.filter(x => x.id !== t.dataset.id);
+  Store.save(); closeSheet(); toast('Expense deleted'); render();
+});
+function openExpForm(e){
+  const v = e ? D.vehById(e.vehicleId) : D.cur();
+  if (!v) return toast('Add a vehicle first', 'bad');
+  const sh = sheet({
+    title: e ? 'Edit expense' : 'Add expense',
+    sub: vehicleDesc(v),
+    body: `<form id="eform">
+      ${field('Category', select('category', EXP_CATS.map(c => [c.id, c.name]), e ? e.category : 'gas'))}
+      <div class="grid2">
+        ${field('Amount', input('amount', { inputmode: 'decimal', placeholder: '0.00', value: e ? e.amount : '', required: true }))}
+        ${field('Date', input('date', { type: 'date', value: e ? e.date : todayISO(), required: true }))}
+      </div>
+      <div class="grid2">
+        ${field('Odometer', input('odometer', { inputmode: 'numeric', placeholder: String(v.mileage), value: e ? e.odometer : '' }))}
+        ${field('Vehicle', select('vehicleId', D.veh().map(x => [x.id, vehicleName(x)]), v.id))}
+      </div>
+      ${field('Note', input('note', { placeholder: 'Shell — 11.2 gal', value: e ? e.note : '' }))}
+      <div class="err"></div>
+    </form>`,
+    actions: `${closeBtn()}<button class="btn primary" id="eSave">${e ? 'Save' : 'Add expense'}</button>`
+  });
+  $('#eSave', sh).addEventListener('click', () => {
+    const f = $('#eform', sh);
+    const d = Object.fromEntries(new FormData(f));
+    if (!num(d.amount)) { $('.err', f).textContent = 'Enter an amount greater than 0.'; return; }
+    const rec = { id: e ? e.id : uid(), userId: (Auth.user()).id, vehicleId: d.vehicleId, category: d.category,
+      amount: num(d.amount), date: d.date || todayISO(), note: String(d.note || '').trim(), odometer: d.odometer ? int(d.odometer) : null };
+    if (e){ Object.assign(e, rec); if (e.serviceId) e.serviceId = e.serviceId; }
+    else Store.db.expenses.push(rec);
+    Store.save(); closeSheet(); toast(e ? 'Expense updated' : 'Expense added', 'ok'); render();
+  });
+}
+
+/* ---------- fuel ---------- */
+on('add-fuel', () => {
+  if (!can('fuel')) { toast('Fuel logging is a Premium feature', 'bad'); return go('plan'); }
+  const v = D.cur(); if (!v) return toast('Add a vehicle first', 'bad');
+  const sh = sheet({
+    title: 'Log a fill-up', sub: vehicleDesc(v),
+    body: `<form id="fform">
+      <div class="grid2">
+        ${field('Odometer', input('odometer', { inputmode: 'numeric', value: v.mileage, required: true }))}
+        ${field('Gallons', input('gallons', { inputmode: 'decimal', placeholder: '11.2', required: true }))}
+      </div>
+      <div class="grid2">
+        ${field('Total cost', input('cost', { inputmode: 'decimal', placeholder: '42.10' }))}
+        ${field('Date', input('date', { type: 'date', value: todayISO() }))}
+      </div>
+      <label class="row gap10 card" style="padding:13px;cursor:pointer">
+        <input type="checkbox" name="full" checked style="width:20px;height:20px;accent-color:#3B82F6">
+        <div><div class="small" style="font-weight:600">Filled the tank completely</div><div class="tiny dim">Required for accurate MPG</div></div>
+      </label>
+      <div class="err"></div>
+    </form>`,
+    actions: `${closeBtn()}<button class="btn primary" id="fSave">Save fill-up</button>`
+  });
+  $('#fSave', sh).addEventListener('click', () => {
+    const f = $('#fform', sh);
+    const d = Object.fromEntries(new FormData(f));
+    if (!num(d.gallons)) { $('.err', f).textContent = 'Enter gallons pumped.'; return; }
+    const rec = { id: uid(), userId: v.userId, vehicleId: v.id, odometer: int(d.odometer), gallons: num(d.gallons),
+      cost: num(d.cost), date: d.date || todayISO(), full: !!d.full };
+    Store.db.fuel.push(rec);
+    if (rec.cost > 0) Store.db.expenses.push({ id: uid(), userId: v.userId, vehicleId: v.id, category: 'gas', amount: rec.cost, date: rec.date, note: 'Fuel — ' + rec.gallons.toFixed(2) + ' gal', odometer: rec.odometer });
+    if (rec.odometer > num(v.mileage)){ v.mileage = rec.odometer; }
+    Store.save(); closeSheet(); toast('Fill-up logged', 'ok'); render();
+  });
+});
+
+/* ---------- modifications ---------- */
+on('add-mod', () => {
+  if (!can('mods')) { toast('Modification tracking is a Premium feature', 'bad'); return go('plan'); }
+  const v = D.cur(); if (!v) return;
+  const sh = sheet({
+    title: 'Add modification', sub: vehicleDesc(v),
+    body: `<form id="mform">
+      ${field('Part / modification', input('name', { placeholder: 'Borla S-Type cat-back exhaust', required: true }))}
+      <div class="grid2">
+        ${field('Brand', input('brand', { placeholder: 'Borla' }))}
+        ${field('Cost', input('cost', { inputmode: 'decimal', placeholder: '1150' }))}
+      </div>
+      ${field('Date installed', input('date', { type: 'date', value: todayISO() }))}
+      ${field('Notes', `<textarea class="input" name="notes" placeholder="Why, where, dyno numbers…"></textarea>`)}
+      <div class="err"></div>
+    </form>`,
+    actions: `${closeBtn()}<button class="btn primary" id="mSave">Add modification</button>`
+  });
+  $('#mSave', sh).addEventListener('click', () => {
+    const f = $('#mform', sh);
+    const d = Object.fromEntries(new FormData(f));
+    if (!d.name.trim()) { $('.err', f).textContent = 'Give the modification a name.'; return; }
+    const rec = { id: uid(), userId: v.userId, vehicleId: v.id, name: d.name.trim(), brand: d.brand.trim(), cost: num(d.cost), date: d.date, notes: d.notes.trim() };
+    Store.db.mods.push(rec);
+    if (rec.cost > 0) Store.db.expenses.push({ id: uid(), userId: v.userId, vehicleId: v.id, category: 'mods', amount: rec.cost, date: rec.date, note: rec.name });
+    Store.save(); closeSheet(); toast('Modification added', 'ok'); render();
+  });
+});
+
+/* ---------- reminders ---------- */
+on('add-reminder', () => {
+  const v = D.cur(); if (!v) return;
+  const sh = sheet({
+    title: 'New reminder', sub: vehicleDesc(v),
+    body: `<form id="rform">
+      ${field('What is it for?', select('kind', [['registration','Registration renewal'],['insurance','Insurance renewal'],['inspection','Inspection'],['other','Something else']], 'registration'))}
+      ${field('Title', input('title', { placeholder: 'Registration renewal', required: true }))}
+      <div class="grid2">
+        ${field('Due date', input('dueDate', { type: 'date', value: addDays(todayISO(), 30), required: true }))}
+        ${field('Repeat', select('repeat', [['none','Once'],['12','Every 12 months'],['6','Every 6 months']], '12'))}
+      </div>
+      <div class="err"></div>
+    </form>`,
+    actions: `${closeBtn()}<button class="btn primary" id="rSave">Add reminder</button>`
+  });
+  const k = $('select[name=kind]', sh);
+  k.addEventListener('change', () => { const t = $('input[name=title]', sh); if (t) t.value = k.options[k.selectedIndex].text.replace('Something else', 'Reminder'); });
+  $('#rSave', sh).addEventListener('click', () => {
+    const f = $('#rform', sh);
+    const d = Object.fromEntries(new FormData(f));
+    if (!d.title.trim() || !d.dueDate) { $('.err', f).textContent = 'Title and due date are required.'; return; }
+    Store.db.reminders.push({ id: uid(), userId: v.userId, vehicleId: v.id, kind: d.kind, title: d.title.trim(), dueDate: d.dueDate, repeat: d.repeat });
+    Store.save(); closeSheet(); toast('Reminder added', 'ok'); render();
+  });
+});
+on('del-reminder', (t) => {
+  Store.db.reminders = Store.db.reminders.filter(x => x.id !== t.dataset.id);
+  Store.save(); toast('Reminder removed'); render();
+});
+/* =========================================================
+   Cloud sync (optional Supabase wiring)
+   ========================================================= */
+const Cloud = {
+  cfg(){ return Cfg.load(); },
+  ready(){ const c = this.cfg(); return !!(c.supabaseUrl && c.supabaseKey && c.cloudToken); },
+  base(){ return String(this.cfg().supabaseUrl || '').replace(/\/+$/, ''); },
+  headers(auth){
+    const c = this.cfg();
+    const h = { 'apikey': c.supabaseKey, 'Content-Type': 'application/json' };
+    h['Authorization'] = 'Bearer ' + (auth || c.cloudToken || c.supabaseKey);
+    return h;
+  },
+  async test(){
+    const c = this.cfg();
+    if (!c.supabaseUrl || !c.supabaseKey) throw new Error('Enter your project URL and anon key first.');
+    const res = await fetch(this.base() + '/rest/v1/vehicles?select=id&limit=1', { headers: this.headers() });
+    if (res.status === 404) throw new Error('Connected, but the tables do not exist yet. Run the SQL in the README.');
+    if (!res.ok) throw new Error('Connection failed (' + res.status + '). Check the URL and anon key.');
+    return true;
+  },
+  async auth(email, pass, signup){
+    const c = this.cfg();
+    if (!c.supabaseUrl || !c.supabaseKey) throw new Error('Enter your project URL and anon key first.');
+    const url = this.base() + '/auth/v1/' + (signup ? 'signup' : 'token?grant_type=password');
+    const res = await fetch(url, { method: 'POST', headers: { 'apikey': c.supabaseKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify(signup ? { email, password: pass } : { email, password: pass }) });
+    const j = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(j.msg || j.error_description || j.message || 'Cloud sign-in failed.');
+    const token = j.access_token || (j.session && j.session.access_token);
+    const uidc = (j.user && j.user.id) || (j.session && j.session.user && j.session.user.id);
+    if (!token) throw new Error('Check your email to confirm the cloud account, then connect again.');
+    c.cloudToken = token; c.cloudUserId = uidc; c.cloudEmail = email;
+    Cfg.save();
+    return true;
+  },
+  async push(){
+    if (!this.ready()) throw new Error('Connect a cloud account first.');
+    const uidc = this.cfg().cloudUserId;
+    const payload = {
+      vehicles: Store.db.vehicles.filter(v => v.userId === Store.db.session).map(v => ({ id: v.id, user_id: uidc, data: v, updated_at: new Date().toISOString() }))
+    };
+    const res = await fetch(this.base() + '/rest/v1/vehicles', { method: 'POST',
+      headers: Object.assign(this.headers(), { 'Prefer': 'resolution=merge-duplicates,return=minimal' }), body: JSON.stringify(payload.vehicles) });
+    if (!res.ok) throw new Error('Push failed (' + res.status + '): ' + (await res.text()).slice(0, 160));
+    // records
+    const rows = [];
+    const push2 = (table, arr) => rows.push.apply(rows, arr.filter(r => r.userId === Store.db.session).map(r => ({ id: r.id, user_id: uidc, vehicle_id: r.vehicleId, data: r, updated_at: new Date().toISOString() })));
+    push2('services', Store.db.services); push2('expenses', Store.db.expenses); push2('fuel', Store.db.fuel);
+    push2('mods', Store.db.mods); push2('reminders', Store.db.reminders);
+    // group by table
+    const byTable = {};
+    [['services', Store.db.services], ['expenses', Store.db.expenses], ['fuel', Store.db.fuel], ['mods', Store.db.mods], ['reminders', Store.db.reminders]].forEach(([t, arr]) => {
+      byTable[t] = arr.filter(r => r.userId === Store.db.session).map(r => ({ id: r.id, user_id: uidc, vehicle_id: r.vehicleId, data: r, updated_at: new Date().toISOString() }));
+    });
+    for (const t of Object.keys(byTable)){
+      if (!byTable[t].length) continue;
+      const r2 = await fetch(this.base() + '/rest/v1/' + t, { method: 'POST',
+        headers: Object.assign(this.headers(), { 'Prefer': 'resolution=merge-duplicates,return=minimal' }), body: JSON.stringify(byTable[t]) });
+      if (!r2.ok) throw new Error('Push of ' + t + ' failed (' + r2.status + '): ' + (await r2.text()).slice(0, 160));
+    }
+    return true;
+  },
+  async pull(){
+    if (!this.ready()) throw new Error('Connect a cloud account first.');
+    const uidc = this.cfg().cloudUserId;
+    const get = async (t) => {
+      const res = await fetch(this.base() + '/rest/v1/' + t + '?select=data&user_id=eq.' + uidc, { headers: this.headers() });
+      if (!res.ok) throw new Error('Pull of ' + t + ' failed (' + res.status + ')');
+      const rows = await res.json();
+      return rows.map(r => r.data).filter(Boolean);
+    };
+    const vehicles = await get('vehicles');
+    const map = { services: 'services', expenses: 'expenses', fuel: 'fuel', mods: 'mods', reminders: 'reminders' };
+    const sets = { vehicles };
+    for (const t of Object.keys(map)) sets[t] = await get(t);
+    // merge by id, local wins on ties
+    const merge = (key, incoming) => {
+      const have = new Map(Store.db[key].map(x => [x.id, x]));
+      let added = 0;
+      incoming.forEach(r => { if (!have.has(r.id)){ Store.db[key].push(r); added++; } });
+      return added;
+    };
+    let added = merge('vehicles', sets.vehicles);
+    ['services', 'expenses', 'fuel', 'mods', 'reminders'].forEach(k => { added += merge(k, sets[k]); });
+    Store.save();
+    return added;
+  }
+};
+
+/* =========================================================
+   Settings
+   ========================================================= */
+function viewSettings(){
+  const u = Auth.user();
+  const p = plan();
+  const prefs = u.prefs || {};
+  const cfg = Cfg.load();
+  return `<div class="screen">
+    <div class="row gap10" style="margin-bottom:18px">
+      <button class="backbtn" data-act="back" data-to="home">${icon('back', 18)}</button>
+      <h1 style="font-size:20px">Settings</h1>
+    </div>
+
+    <div class="card">
+      <div class="row gap13">
+        <div style="width:52px;height:52px;border-radius:18px;background:linear-gradient(150deg,#2E3542,#171B23);display:grid;place-items:center;font-size:19px;font-weight:700;border:1px solid var(--line2)">${esc((u.name || '?').trim().charAt(0).toUpperCase())}</div>
+        <div class="grow"><div style="font-size:16px;font-weight:700">${esc(u.name)}</div>
+          <div class="tiny dim" style="margin-top:2px">${esc(u.email)}</div></div>
+        <span class="badge ${u.plan === 'free' ? 'neutral' : 'info'}">${esc(p.name.replace('CarKeeper ', ''))}</span>
+      </div>
+      ${p.paid ? `<div class="row between" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--line)">
+        <div><div class="tiny dim">${u.paymentFailed ? 'Payment failed' : u.cancelAtPeriodEnd ? 'Access until' : 'Renews'}</div>
+          <div class="small" style="font-weight:600;margin-top:2px">${u.planRenew ? fmtDate(u.planRenew.slice(0,10)) : '—'}</div></div>
+        <span class="badge ${u.paymentFailed ? 'bad' : u.cancelAtPeriodEnd ? 'warn' : 'ok'}">${esc((u.planStatus || 'active'))}</span>
+      </div>` : ''}
+      <div class="row gap8 mt12">
+        <button class="btn ${p.paid ? 'ghost' : 'primary'} sm grow" data-act="open-plan">${p.paid ? 'Subscription' : 'Upgrade'}</button>
+        ${p.paid ? `<button class="btn ghost sm grow" data-act="manage-billing">Manage billing</button>` : ''}
+      </div>
+    </div>
+
+    <div class="sectitle"><h2>Preferences</h2></div>
+    <div class="card">
+      ${field('Miles per month (prediction)', select('milesPerMonth', [[500,'Under 500'],[1000,'~1,000'],[1500,'~1,500'],[2500,'2,500+']], num(prefs.milesPerMonth, 1000)))}
+      ${field('Advance warning', select('leadDays', [[14,'2 weeks'],[30,'30 days'],[60,'60 days']], num(prefs.leadDays, 30)))}
+      <div class="row between" style="padding:6px 0">
+        <div><div class="small" style="font-weight:600">Service reminders</div><div class="tiny dim">Show due-soon and overdue alerts</div></div>
+        <div class="switch ${prefs.reminders !== false ? 'on' : ''}" data-act="toggle-pref" data-key="reminders"></div>
+      </div>
+      <button class="btn soft wide sm mt12" data-act="save-prefs">Save preferences</button>
+    </div>
+
+    <div class="sectitle"><h2>Assistant</h2></div>
+    <div class="card">
+      <div class="row between">
+        <div><div class="small" style="font-weight:600">AI model</div>
+          <div class="tiny dim">${cfg.aiKey ? 'Connected · ' + esc(cfg.aiModel) : 'Not connected'}</div></div>
+        <span class="badge ${cfg.aiKey ? 'ok' : 'neutral'}">${cfg.aiKey ? 'Ready' : 'No key'}</span>
+      </div>
+      <button class="btn ghost wide sm mt12" data-act="ai-settings">Configure assistant</button>
+    </div>
+
+    <div class="sectitle"><h2>Cloud sync <span class="tiny dim" style="font-weight:400;text-transform:none;letter-spacing:0">optional</span></h2></div>
+    <div class="card">
+      <div class="row between">
+        <div><div class="small" style="font-weight:600">Supabase backend</div>
+          <div class="tiny dim">${Cloud.ready() ? 'Connected as ' + esc(cfg.cloudEmail || 'cloud user') : cfg.supabaseUrl ? 'Project saved, not connected' : 'Local-only (no cloud)'}</div></div>
+        <span class="badge ${Cloud.ready() ? 'ok' : 'neutral'}">${Cloud.ready() ? 'Synced' : 'Off'}</span>
+      </div>
+      ${Cloud.ready() ? `<div class="row gap8 mt12"><button class="btn ghost sm grow" data-act="cloud-push">Upload local data</button><button class="btn ghost sm grow" data-act="cloud-pull">Download cloud data</button></div>` : `<div class="tiny dim mt12" style="line-height:1.55">Multi-device accounts, emailed password resets and shared vehicle access need a backend. Add your Supabase project to enable it.</div>`}
+      <button class="btn ghost wide sm mt12" data-act="cloud-settings">Configure cloud sync</button>
+    </div>
+
+    <div class="sectitle"><h2>Data</h2></div>
+    <div class="card" style="padding:4px 16px">
+      <div class="lrow" data-act="export-json"><div class="ico">${icon('download', 18)}</div><div class="grow"><div class="t">Export all data</div><div class="s">JSON backup of everything on this device</div></div>${icon('chev', 16)}</div>
+      <div class="lrow" data-act="import-json"><div class="ico">${icon('share', 18)}</div><div class="grow"><div class="t">Import backup</div><div class="s">Restore from a CarKeeper JSON file</div></div>${icon('chev', 16)}</div>
+      <div class="lrow" data-act="change-pass"><div class="ico">${icon('lock', 18)}</div><div class="grow"><div class="t">Change password</div><div class="s">Update your local account</div></div>${icon('chev', 16)}</div>
+      <div class="lrow" data-act="logout"><div class="ico">${icon('logout', 18)}</div><div class="grow"><div class="t">Log out</div><div class="s">Data stays on this device</div></div></div>
+      <div class="lrow" data-act="delete-account"><div class="ico" style="color:#FF8189">${icon('trash', 18)}</div><div class="grow"><div class="t" style="color:#FF8189">Delete account</div><div class="s">Erases this account and all records</div></div></div>
+    </div>
+
+    <div class="card mt16">
+      <div class="tiny dim" style="line-height:1.7">
+        <b style="color:var(--txt2)">CarKeeper 1.0.0</b> · Local-first build<br>
+        Maintenance predictions are estimates from your logged intervals, not a mechanic's diagnosis. AI answers are general guidance only. Always consult a qualified technician for safety-critical issues.
+      </div>
+    </div>
+    <div style="height:24px"></div>
+  </div>`;
+}
+
+on('toggle-pref', (t) => { t.classList.toggle('on'); });
+on('save-prefs', () => {
+  const u = Auth.user();
+  const mpm = $('select[name=milesPerMonth]');
+  const ld = $('select[name=leadDays]');
+  const sw = $('[data-key=reminders]');
+  u.prefs = Object.assign({}, u.prefs, {
+    milesPerMonth: int(mpm ? mpm.value : 1000, 1000),
+    leadDays: int(ld ? ld.value : 30, 30),
+    reminders: sw ? sw.classList.contains('on') : true
+  });
+  Store.save(); toast('Preferences saved', 'ok');
+});
+on('logout', () => { Auth.logout(); state.authMode = 'welcome'; go('home'); });
+on('delete-account', () => {
+  const u = Auth.user();
+  sheet({ title: 'Delete your account?', sub: u.email,
+    body: `<div class="card" style="border-color:rgba(255,77,87,.3);background:rgba(255,77,87,.06)"><div class="small" style="line-height:1.55">Every vehicle, service record, expense and reminder for this account will be permanently erased from this device. Export a backup first if you might want it later.</div></div>`,
+    actions: `${closeBtn()}<button class="btn danger" id="da">Delete everything</button>` });
+  $('#da').addEventListener('click', () => {
+    const db = Store.db;
+    const uidv = u.id;
+    db.vehicles = db.vehicles.filter(v => v.userId !== uidv);
+    ['services','expenses','fuel','mods','reminders','odo'].forEach(k => { db[k] = db[k].filter(x => x.userId !== uidv); });
+    db.users = db.users.filter(x => x.id !== uidv);
+    db.session = null; Store.save();
+    closeSheet(); state.authMode = 'welcome'; toast('Account deleted'); go('home');
+  });
+});
+on('change-pass', () => {
+  const sh = sheet({ title: 'Change password', sub: 'Local account on this device',
+    body: `<form id="pwform">${field('Current password', input('cur', { type: 'password', required: true }))}${field('New password', input('next', { type: 'password', placeholder: 'At least 8 characters', required: true }))}<div class="err"></div></form>`,
+    actions: `${closeBtn()}<button class="btn primary" id="pwSave">Update password</button>` });
+  $('#pwSave', sh).addEventListener('click', async () => {
+    const f = $('#pwform', sh); const d = Object.fromEntries(new FormData(f));
+    try { await Auth.changePassword(d.cur, d.next); closeSheet(); toast('Password updated', 'ok'); }
+    catch (e) { $('.err', f).textContent = e.message; }
+  });
+});
+
+function download(filename, text, mime){
+  const blob = new Blob([text], { type: mime || 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = filename;
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1200);
+}
+on('export-json', () => {
+  const u = Auth.user();
+  const data = { exportedAt: new Date().toISOString(), user: { name: u.name, email: u.email, prefs: u.prefs }, vehicles: D.veh() };
+  const uidv = u.id;
+  const pack = (arr) => arr.filter(x => x.userId === uidv);
+  Object.assign(data, { services: pack(Store.db.services), expenses: pack(Store.db.expenses), fuel: pack(Store.db.fuel), mods: pack(Store.db.mods), reminders: pack(Store.db.reminders), odo: pack(Store.db.odo) });
+  download('carkeeper-backup-' + todayISO() + '.json', JSON.stringify(data, null, 2), 'application/json');
+  toast('Backup downloaded', 'ok');
+});
+on('import-json', () => {
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = 'application/json';
+  inp.onchange = async () => {
+    const file = inp.files[0]; if (!file) return;
+    try {
+      const data = JSON.parse(await file.text());
+      if (!data.vehicles) throw new Error('That file does not look like a CarKeeper backup.');
+      const u = Auth.user();
+      let n = 0;
+      const add = (key, arr) => { (arr || []).forEach(r => { if (!Store.db[key].some(x => x.id === r.id)){ Store.db[key].push(Object.assign({}, r, { userId: u.id })); n++; } }); };
+      add('vehicles', data.vehicles); add('services', data.services); add('expenses', data.expenses);
+      add('fuel', data.fuel); add('mods', data.mods); add('reminders', data.reminders); add('odo', data.odo);
+      Store.save(); toast(n + ' records imported', 'ok'); render();
+    } catch (e) { toast(e.message, 'bad'); }
+  };
+  inp.click();
+});
+
+/* ---------- AI settings ---------- */
+on('ai-settings', () => {
+  const cfg = Cfg.load();
+  const sh = sheet({
+    title: 'Assistant settings', sub: 'Your key is stored in this browser only.',
+    body: `<form id="aiform">
+      ${field('API key', input('aiKey', { type: 'password', placeholder: 'sk-…', value: cfg.aiKey }), 'Sent directly from your device to the provider. Never logged by CarKeeper.')}
+      ${field('Model', select('aiModel', [['gpt-4o-mini','OpenAI · gpt-4o-mini'],['gpt-4o','OpenAI · gpt-4o'],['gpt-4.1-mini','OpenAI · gpt-4.1-mini'],['claude-3-5-sonnet','Anthropic (needs proxy)']], cfg.aiModel))}
+      <div class="card" style="background:rgba(59,130,246,.07);border-color:rgba(59,130,246,.2)">
+        <div class="tiny muted" style="line-height:1.6">This build calls the OpenAI Chat Completions API directly. Anthropic and other providers need a small proxy — see the README for the 20-line endpoint to deploy.</div>
+      </div>
+      <div class="err"></div>
+    </form>`,
+    actions: `${closeBtn()}<button class="btn primary" id="aiSave">Save</button>`
+  });
+  $('#aiSave', sh).addEventListener('click', () => {
+    const d = Object.fromEntries(new FormData($('#aiform', sh)));
+    cfg.aiKey = String(d.aiKey || '').trim();
+    cfg.aiModel = d.aiModel;
+    Cfg.save(); closeSheet(); toast(cfg.aiKey ? 'Assistant connected' : 'Assistant disconnected', 'ok'); render();
+  });
+});
+
+/* ---------- Cloud settings ---------- */
+on('cloud-settings', () => {
+  const cfg = Cfg.load();
+  const sh = sheet({
+    title: 'Cloud sync', sub: 'Optional Supabase backend for multi-device accounts.',
+    body: `<form id="cloudform">
+      ${field('Project URL', input('supabaseUrl', { placeholder: 'https://xxxx.supabase.co', value: cfg.supabaseUrl }))}
+      ${field('Anon / publishable key', input('supabaseKey', { type: 'password', placeholder: 'eyJhbGci…', value: cfg.supabaseKey }))}
+      <div class="grid2">
+        ${field('Cloud email', input('cloudEmail', { type: 'email', placeholder: 'you@example.com', value: cfg.cloudEmail || '' }))}
+        ${field('Cloud password', input('cloudPass', { type: 'password', placeholder: '••••••••' }))}
+      </div>
+      <div class="card" style="background:rgba(255,176,32,.06);border-color:rgba(255,176,32,.25)">
+        <div class="tiny muted" style="line-height:1.6">Run the SQL in <b style="color:var(--txt2)">README.md → Supabase schema</b> once in your project's SQL editor. Row level security keeps every account's data isolated.</div>
+      </div>
+      <div class="err"></div>
+    </form>`,
+    actions: `${closeBtn()}<button class="btn ghost" id="cloudTest">Test</button><button class="btn primary" id="cloudSave">Connect</button>`
+  });
+  $('#cloudTest', sh).addEventListener('click', async () => {
+    const d = Object.fromEntries(new FormData($('#cloudform', sh)));
+    cfg.supabaseUrl = String(d.supabaseUrl || '').trim(); cfg.supabaseKey = String(d.supabaseKey || '').trim(); Cfg.save();
+    try { await Cloud.test(); toast('Connection OK', 'ok'); } catch (e) { $('.err', $('#cloudform', sh)).textContent = e.message; }
+  });
+  $('#cloudSave', sh).addEventListener('click', async () => {
+    const d = Object.fromEntries(new FormData($('#cloudform', sh)));
+    const err = $('.err', $('#cloudform', sh));
+    try {
+      cfg.supabaseUrl = String(d.supabaseUrl || '').trim();
+      cfg.supabaseKey = String(d.supabaseKey || '').trim();
+      Cfg.save();
+      if (!cfg.supabaseUrl || !cfg.supabaseKey) throw new Error('URL and anon key are required.');
+      if (!d.cloudEmail || !d.cloudPass) throw new Error('Enter the cloud account email and password to connect.');
+      await Cloud.auth(d.cloudEmail, d.cloudPass, false);
+      closeSheet(); toast('Cloud connected', 'ok'); render();
+    } catch (e) { err.textContent = e.message; }
+  });
+});
+on('cloud-push', async () => {
+  try { await Cloud.push(); toast('Uploaded to cloud', 'ok'); } catch (e) { toast(e.message, 'bad'); }
+});
+on('cloud-pull', async () => {
+  try { const n = await Cloud.pull(); toast(n + ' records downloaded', 'ok'); render(); } catch (e) { toast(e.message, 'bad'); }
+});
+
+/* =========================================================
+   Subscription
+   ========================================================= */
+on('open-plan', () => { closeSheet(); go('plan'); });
+function viewPlan(){
+  const u = Auth.user();
+  const cycle = state.planCycle || 'month';
+  const cfg = PAY.cfg;
+  const current = (u.plan && PLANS[u.plan]) ? u.plan : 'free';
+  const isPaid = !!PLANS[current].paid;
+  const statusLine = (() => {
+    if (!isPaid) return null;
+    if (u.paymentFailed) return { tone: 'bad', text: 'Last payment failed — update your card to keep access.' };
+    if (u.cancelAtPeriodEnd) return { tone: 'warn', text: 'Cancels on ' + (u.planRenew ? fmtDate(u.planRenew.slice(0,10)) : 'the end of the period') + '. You keep access until then.' };
+    if (u.planRenew) return { tone: 'ok', text: 'Renews ' + fmtDate(u.planRenew.slice(0,10)) };
+    return null;
+  })();
+
+  const FEATURES = {
+    free: ['One saved vehicle','Basic maintenance tracking','Manual reminders','Basic repair history','Basic expense tracking'],
+    basic: ['Unlimited vehicles','AI car assistant','Automatic maintenance reminders','Receipt and invoice storage','Full expense analytics','Fuel economy + modification logs','Warranty tracking','Downloadable vehicle reports'],
+    premium: ['Everything in Basic','Advanced AI vehicle assistance','Maintenance cost comparisons','Multiple driver profiles','Shared vehicle access','Detailed ownership cost reports','Priority support']
+  };
+  const defs = [
+    { id:'free', tag:'Free forever', desc:'For everyday drivers who want basic vehicle management.' },
+    { id:'basic', tag:'Most popular', desc:'For drivers who want complete vehicle management.' },
+    { id:'premium', tag:'', desc:'For enthusiasts and families managing several vehicles.' }
+  ];
+
+  return `<div class="screen">
+    <div class="row gap10" style="margin-bottom:16px">
+      <button class="backbtn" data-act="back" data-to="settings">${icon('back', 18)}</button>
+      <div class="grow"><h1 style="font-size:20px">Subscription</h1>
+        <div class="tiny dim">${isPaid ? 'Manage your plan and payment method' : 'Upgrade any time · cancel any time'}</div></div>
+      ${cfg.mode === 'test' && cfg.configured ? `<span class="badge warn">Test</span>` : ''}
+    </div>
+
+    ${statusLine ? `<div class="card" style="margin-bottom:14px;border-color:${statusLine.tone === 'bad' ? 'rgba(255,77,87,.35)' : statusLine.tone === 'warn' ? 'rgba(255,176,32,.32)' : 'rgba(34,201,124,.3)'};background:${statusLine.tone === 'bad' ? 'rgba(255,77,87,.07)' : statusLine.tone === 'warn' ? 'rgba(255,176,32,.06)' : 'rgba(34,201,124,.06)'}">
+      <div class="row between">
+        <div><div class="small" style="font-weight:700">${esc(PLANS[current].name)}</div>
+          <div class="tiny muted" style="margin-top:3px">${esc(statusLine.text)}</div></div>
+        <span class="badge ${statusLine.tone}">${esc((u.planStatus || 'active').replace('_',' '))}</span>
+      </div>
+      <button class="btn ghost wide sm mt12" data-act="manage-billing">${icon('wallet', 15)} Manage billing & cancellation</button>
+    </div>` : ''}
+
+    <div class="seg" style="margin-bottom:18px">
+      <button class="${cycle === 'month' ? 'on' : ''}" data-act="plan-cycle" data-c="month">Monthly</button>
+      <button class="${cycle === 'year' ? 'on' : ''}" data-act="plan-cycle" data-c="year">Yearly · save 33%</button>
+    </div>
+
+    ${!cfg.configured ? `<div class="card" style="margin-bottom:16px;border-color:rgba(255,176,32,.32);background:rgba(255,176,32,.06)">
+      <div class="row gap8" style="color:#FFC45C;font-size:12.5px;font-weight:700">${icon('alert', 15)} ${cfg.reachable ? 'Stripe prices not resolved on the server' : 'Payments server not reachable'}</div>
+      <div class="tiny muted mt8" style="line-height:1.7">${esc(PAY.reasonText())}</div>
+      ${cfg.reachable ? `<div class="tiny dim mt8" style="line-height:1.7">Resolved: ${(cfg.plans || []).length} of 4 prices${(cfg.missing || []).length ? ' · missing: ' + esc(cfg.missing.join(', ')) : ''}${cfg.reasons && cfg.reasons.noWebhook ? ' · webhook secret missing' : ''}${cfg.reasons && cfg.reasons.noPortal ? ' · portal config missing' : ''}</div>` : ''}
+      <div class="row gap8 mt12">
+        <button class="btn ghost sm" data-act="pay-retry">${icon('refresh', 14)} Retry connection</button>
+        <button class="btn ghost sm" data-act="copy-health">Copy /api/health link</button>
+      </div>
+    </div>` : (cfg.mode === 'test' ? `<div class="card" style="margin-bottom:16px;border-color:rgba(59,130,246,.28);background:rgba(59,130,246,.06)">
+      <div class="tiny muted" style="line-height:1.6"><b style="color:#8AB8FF">Stripe test mode.</b> No real money moves. Use card 4242 4242 4242 4242, any future expiry date and any CVC.</div>
+    </div>` : '')}
+
+    ${defs.map(d => {
+      const P = PLANS[d.id];
+      const isCur = current === d.id;
+      const amount = P.paid ? money(PAY.price(d.id, cycle)) : '$0';
+      let cta;
+      if (!cfg.configured && d.id !== 'free') cta = `<button class="btn ghost wide sm mt16" disabled>Payments unavailable</button>`;
+      else if (isCur) cta = `<button class="btn ghost wide sm mt16" disabled>Current plan</button>`;
+      else if (d.id === 'free') cta = `<button class="btn ghost wide sm mt16" data-act="manage-billing">Cancel in billing portal</button>`;
+      else if (isPaid) cta = `<button class="btn ghost wide sm mt16" data-act="manage-billing">Switch plan in billing portal</button>`;
+      else cta = `<button class="btn ${d.id === 'basic' ? 'primary' : 'ghost'} wide sm mt16" data-act="buy" data-plan="${d.id}" data-cycle="${cycle}">${d.id === 'basic' ? 'Subscribe' : 'Choose ' + esc(P.name.replace('CarKeeper ', ''))}${P.paid ? ' · ' + amount : ''}</button>`;
+      return `<div class="plan ${d.id === 'basic' ? 'best' : ''} ${isCur ? 'cur' : ''}" style="margin-bottom:14px">
+        <div class="row between">
+          <div class="tiny" style="letter-spacing:.14em;font-weight:800;color:var(--txt2)">${esc(P.name.toUpperCase())}</div>
+          ${d.tag ? `<span class="badge ${d.id === 'basic' ? 'ok' : 'neutral'}">${d.tag}</span>` : ''}
+        </div>
+        <div class="price">${amount}<span style="font-size:13px;font-weight:600;color:var(--txt3);margin-left:3px">/${P.paid ? (cycle === 'year' ? 'year' : 'month') : 'forever'}</span></div>
+        ${P.paid ? `<div class="tiny dim">${cycle === 'year' ? money(PAY.price(d.id, 'month')) + ' billed monthly, or ' + amount + ' per year' : 'Billed monthly · cancel any time'}</div>` : `<div class="tiny dim">No card required</div>`}
+        <div class="small muted" style="margin-top:10px;line-height:1.5">${d.desc}</div>
+        <ul>${FEATURES[d.id].map(f => `<li>${icon('check', 13)}<span>${esc(f)}</span></li>`).join('')}</ul>
+        ${cta}
+      </div>`;
+    }).join('')}
+
+    <div class="card">
+      <div class="row gap8" style="justify-content:center;flex-wrap:wrap">
+        ${['VISA','Mastercard','AMEX','Debit','Apple Pay','Google Pay'].map(b => `<span class="badge neutral" style="text-transform:none;letter-spacing:0;font-size:10.5px">${b}</span>`).join('')}
+      </div>
+      <div class="tiny dim center" style="margin-top:10px;line-height:1.6">Payments are processed by Stripe on their secure checkout page. CarKeeper never sees or stores your card number — only the subscription status your account is entitled to.</div>
+    </div>
+
+    ${!cfg.configured ? `<div class="card mt16" style="border-style:dashed">
+      <div class="tiny dim" style="line-height:1.6">Developer preview: set a plan locally to review gated screens without payments.</div>
+      <div class="row gap8 mt12" style="flex-wrap:wrap">
+        ${['free','basic','premium'].map(id => `<button class="btn ghost sm" data-act="preview-plan" data-id="${id}" ${current === id ? 'disabled' : ''}>Preview ${esc(PLANS[id].name.replace('CarKeeper ', ''))}</button>`).join('')}
+      </div>
+    </div>` : ''}
+
+    <div class="tiny dim center mt16" style="line-height:1.6">Subscriptions renew automatically until cancelled. Cancel from the billing portal at any time; access continues to the end of the paid period.</div>
+  </div>`;
+}
+
+on('plan-cycle', (t) => { state.planCycle = t.dataset.c; render(); });
+
+on('pay-retry', async (t) => {
+  t.disabled = true; t.textContent = 'Checking…';
+  await PAY.load();
+  render();
+  toast(PAY.cfg.configured ? 'Payments connected' : PAY.reasonText(), PAY.cfg.configured ? 'ok' : 'bad');
+});
+
+on('copy-health', async () => {
+  const url = location.origin + '/api/health';
+  try { await navigator.clipboard.writeText(url); toast('Link copied — open it in Safari', 'ok'); }
+  catch (e) { toast(url, ''); }
+});
+
+on('buy', async (t) => {
+  const u = Auth.user();
+  const planId = t.dataset.plan;
+  const cyc = t.dataset.cycle || state.planCycle || 'month';
+  if (!PAY.hasPrice(planId, cyc)){ toast(PAY.reasonText(), 'bad'); return; }
+  const label = t.innerHTML;
+  t.disabled = true; t.innerHTML = 'Opening secure checkout…';
+  try {
+    await PAY.checkout(u.email, planId, cyc);
+  } catch (e) {
+    t.disabled = false; t.innerHTML = label;
+    if (/already has a subscription/i.test(e.message)){
+      toast('You already have a subscription — opening billing', '');
+      return actions_manageBilling();
+    }
+    toast(e.message, 'bad');
+  }
+});
+
+async function actions_manageBilling(){
+  const u = Auth.user();
+  if (!PAY.cfg.reachable){ toast(PAY.reasonText(), 'bad'); return; }
+  if (!PAY.cfg.reasons || !PAY.cfg.reasons.noPortal){
+    /* portal is configured server-side; continue */
+  }
+  try { await PAY.portal(u.email); }
+  catch (e) { toast(e.message, 'bad'); }
+}
+on('manage-billing', () => actions_manageBilling());
+
+on('preview-plan', (t) => {
+  const u = Auth.user();
+  u.plan = t.dataset.id; u.planCycle = state.planCycle || 'month'; u.planSource = 'preview';
+  Store.save(); toast('Previewing ' + PLANS[t.dataset.id].name + ' — no charge', 'ok');
+  render();
+});
+
+/* =========================================================
+   Service report
+   ========================================================= */
+function viewReport(){
+  const v = D.cur();
+  if (!v) return `<div class="screen">${emptyBox('car','No vehicle','Add a vehicle first.')}</div>`;
+  const svc = D.services(v.id).slice().reverse();
+  const exps = D.expenses(v.id);
+  const total = exps.reduce((a, e) => a + num(e.amount), 0);
+  const locked = !can('reports');
+  return `<div class="screen">
+    <div class="row gap10" style="margin-bottom:18px">
+      <button class="backbtn" data-act="back" data-to="home">${icon('back', 18)}</button>
+      <div class="grow"><h1 style="font-size:20px">Service report</h1><div class="tiny dim">${esc(vehicleDesc(v))}</div></div>
+    </div>
+    <div class="card">
+      <div class="tiny dim" style="letter-spacing:.1em;text-transform:uppercase;font-weight:700">CarKeeper vehicle history</div>
+      <div style="font-size:22px;font-weight:800;letter-spacing:-.03em;margin-top:8px">${esc(vehicleDesc(v))}</div>
+      <div class="small muted" style="margin-top:4px">${v.vin ? 'VIN ' + esc(v.vin) : 'No VIN'} · ${miles(v.mileage)} mi</div>
+      <div class="row gap14 mt12" style="margin-top:14px;flex-wrap:wrap">
+        <div><div class="tiny dim">Records</div><div style="font-weight:700">${svc.length}</div></div>
+        <div><div class="tiny dim">Total spend</div><div style="font-weight:700">${money(total)}</div></div>
+        <div><div class="tiny dim">Generated</div><div style="font-weight:700">${fmtDate(todayISO())}</div></div>
+      </div>
+    </div>
+    <div class="sectitle"><h2>History</h2></div>
+    <div class="card" style="padding:4px 16px">
+      ${svc.length ? svc.map(s => `<div class="lrow"><div class="ico">${icon(mtById(s.type).icon, 17)}</div>
+        <div class="grow"><div class="t">${esc(mtById(s.type).name)}</div><div class="s">${fmtDate(s.date)} · ${miles(s.mileage)} mi${s.shop ? ' · ' + esc(s.shop) : ''}</div></div>
+        <div class="amt">${s.cost ? money(s.cost) : '—'}</div></div>`).join('') : '<div class="lrow"><div class="grow"><div class="s" style="padding:10px 0">No records yet.</div></div></div>'}
+    </div>
+    ${locked ? `<div class="card mt16" style="border-color:rgba(59,130,246,.28);background:rgba(59,130,246,.06)">
+      <div class="row gap10"><div style="color:#8AB8FF">${icon('crown', 20)}</div><div class="grow"><div class="small" style="font-weight:650">Downloadable reports are Premium</div>
+      <div class="tiny dim" style="margin-top:3px">Upgrade to export a signed history you can hand to a buyer.</div></div></div>
+      <button class="btn primary wide sm mt12" data-act="open-plan">See plans</button></div>`
+    : `<button class="btn primary wide mt16" data-act="report-download">${icon('download', 17)} Download report</button>
+       <button class="btn ghost wide mt12" data-act="report-print">${icon('print', 17)} Print / save PDF</button>`}
+  </div>`;
+}
+function reportHtml(){
+  const v = D.cur();
+  const svc = D.services(v.id).slice().reverse();
+  const exps = D.expenses(v.id);
+  const rows = svc.map(s => `<tr><td>${esc(fmtDate(s.date))}</td><td>${esc(mtById(s.type).name)}</td><td>${miles(s.mileage)}</td><td>${s.cost ? money(s.cost) : '—'}</td><td>${esc(s.shop || '—')}</td><td>${esc(s.notes || '')}</td></tr>`).join('');
+  return `<!doctype html><html><head><meta charset="utf-8"><title>CarKeeper Service History — ${esc(vehicleDesc(v))}</title>
+  <style>body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#111;max-width:820px;margin:36px auto;padding:0 24px}
+  h1{font-size:24px;margin:0 0 4px}h2{font-size:13px;text-transform:uppercase;letter-spacing:.1em;color:#666;margin:26px 0 10px}
+  .meta{color:#555;font-size:13px}.box{border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin:18px 0}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}th{text-align:left;color:#666;font-weight:600;border-bottom:1px solid #e5e7eb;padding:8px 6px}
+  td{border-bottom:1px solid #f1f2f4;padding:8px 6px;vertical-align:top}footer{margin-top:34px;font-size:11px;color:#888;line-height:1.6}
+  .brand{font-weight:800;letter-spacing:-.02em}.pill{display:inline-block;background:#eff6ff;color:#1d4ed8;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700}</style></head><body>
+  <div class="brand">CarKeeper</div>
+  <h1>${esc(vehicleDesc(v))}</h1>
+  <div class="meta">${v.nickname ? esc(v.nickname) + ' · ' : ''}${v.vin ? 'VIN ' + esc(v.vin) : 'VIN not recorded'} · ${v.plate ? esc(v.plate) : 'No plate'} · Odometer ${miles(v.mileage)} mi</div>
+  <div class="box"><span class="pill">${svc.length} service records</span> &nbsp; <span class="pill">${money(exps.reduce((a, e) => a + num(e.amount), 0))} total cost</span>
+  <div style="margin-top:10px;font-size:13px;color:#444">Report generated ${esc(fmtDate(todayISO()))} · CarKeeper</div></div>
+  <h2>Service history</h2>
+  <table><thead><tr><th>Date</th><th>Service</th><th>Mileage</th><th>Cost</th><th>Provider</th><th>Notes</th></tr></thead><tbody>${rows || '<tr><td colspan="6">No service records.</td></tr>'}</tbody></table>
+  <h2>Specifications</h2>
+  <table><tbody>
+    <tr><td>Engine</td><td>${esc(v.engine || '—')}</td></tr>
+    <tr><td>Tire size</td><td>${esc(v.tireSize || '—')}</td></tr>
+    <tr><td>Warranty</td><td>${esc(v.warranty || '—')}</td></tr>
+    <tr><td>Estimated value</td><td>${v.resale ? money(v.resale) : '—'}</td></tr>
+  </tbody></table>
+  <footer>This history is self-reported by the vehicle owner and generated by CarKeeper. It is not a mechanical inspection or certification.
+  </footer></body></html>`;
+}
+on('report-download', () => {
+  if (!can('reports')) return go('plan');
+  const v = D.cur();
+  download('carkeeper-history-' + (v.make || 'vehicle') + '-' + todayISO() + '.html', reportHtml(), 'text/html');
+  toast('Report downloaded', 'ok');
+});
+on('report-print', () => {
+  if (!can('reports')) return go('plan');
+  const w = window.open('', '_blank');
+  if (!w) return toast('Allow pop-ups to print', 'bad');
+  w.document.write(reportHtml()); w.document.close(); setTimeout(() => w.print(), 500);
+});
+/* =========================================================
+   Boot
+   ========================================================= */
+(function boot(){
+  Store.load(); Cfg.load(); bindModal();
+  if (!Store.db.session || !Auth.user()){ Store.db.session = null; state.authMode = 'welcome'; }
+  if (document.addEventListener){
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSheet(); });
+  }
+  /* migrate plans from earlier builds */
+  const bootUser = Auth.user();
+  if (bootUser && bootUser.plan === 'pro'){ bootUser.plan = 'premium'; Store.save(); }
+
+  render();
+  (async () => {
+    await PAY.load();
+    const q = new URLSearchParams(location.search);
+    const flag = q.get('checkout') || q.get('billing') || q.get('session_id');
+    if (flag || q.get('session_id')){
+      const clean = location.pathname;
+      history.replaceState({}, '', clean);
+    }
+    const user = Auth.user();
+    if (user){
+      if (q.get('checkout') === 'success'){
+        toast('Payment received — activating your plan…', 'ok');
+        await pollForActivation(8);
+      } else if (q.get('checkout') === 'cancelled'){
+        toast('Checkout cancelled — nothing was charged', '');
+        await refreshEntitlement();
+        render();
+      } else {
+        const changed = await refreshEntitlement(true);
+        if (changed) render();
+      }
+    }
+  })();
+
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || /^(localhost|127\.0\.0\.1)$/.test(location.hostname))){
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+})();
+</script>
+</body>
+</html>
