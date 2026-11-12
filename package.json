@@ -1,0 +1,17 @@
+{
+  "name": "carkeeper",
+  "version": "1.1.0",
+  "private": true,
+  "type": "module",
+  "description": "CarKeeper — vehicle management PWA with Stripe subscriptions",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server.js",
+    "dev": "node --env-file-if-exists=.env --watch server.js",
+    "stripe:setup": "node --env-file-if-exists=.env scripts/stripe-setup.mjs"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "stripe": "^23.1.0"
+  }
+}
